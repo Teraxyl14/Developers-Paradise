@@ -36,5 +36,5 @@ jobs:
       - name: Trigger Weekly Newsletter (Fridays Only)
         if: github.event.schedule == '0 0 * * 5' || github.event_name == 'workflow_dispatch'
         run: |
-          curl -f -X GET "https://YOUR_VERCEL_DOMAIN.vercel.app/api/cron/newsletter" \
+          curl -f -X GET "https://developers-paradise-wmjn.vercel.app//api/cron/newsletter" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
