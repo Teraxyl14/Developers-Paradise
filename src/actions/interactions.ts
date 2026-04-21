@@ -47,7 +47,7 @@ export async function linkRepository(ideaId: string, url: string, openToCoFounde
      if (emails.length > 0) {
         try {
           await resend.emails.send({
-            from: 'IdeaHub <notifications@ideahub.dev>',
+            from: 'Developers Paradise <notifications@developersparadise.dev>',
             to: emails,
             subject: `Update on saved idea: ${idea.title}`,
             html: `<p>Great news!</p><p>Someone just linked a new solution repository to an idea you saved.</p><p><strong>Idea:</strong> ${idea.title}</p><p><strong>Repository:</strong> <a href="${url}">${url}</a></p>`

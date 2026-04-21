@@ -226,7 +226,7 @@ class RedditScraper(Scraper):
         print("[Reddit] Extracting workflow complaints via JSON endpoints...")
         results = []
         # Reddit requires a unique User-Agent to avoid immediate 429 Too Many Requests
-        self.headers["User-Agent"] = "IdeaHubBot/1.0 (Data Extraction for Developer Pain Points)"
+        self.headers["User-Agent"] = "DevelopersParadiseBot/1.0 (Data Extraction for Developer Pain Points)"
         
         # High-value subreddits and query combinations
         queries = [

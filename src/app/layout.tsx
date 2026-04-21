@@ -11,8 +11,18 @@ import { auth } from "@/auth";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "IdeaHub | Discover Validated Dev Problems",
+  title: "Developers Paradise | Discover Validated Dev Problems",
   description: "Find validated software developer pain points to build your next project.",
+  icons: {
+    icon: [
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' }
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }
+    ],
+  },
+  manifest: '/site.webmanifest',
 };
 
 export default async function RootLayout({
@@ -30,11 +40,11 @@ export default async function RootLayout({
           <header className="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-white/10 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-zinc-950/60 transition-colors">
             <div className="max-w-5xl mx-auto flex h-14 items-center justify-between px-4">
               <Link href="/" className="flex items-center gap-2 group">
-                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-1.5 rounded-lg shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all">
-                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <div className="w-8 h-8 rounded-lg overflow-hidden shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all border border-zinc-200 dark:border-white/10 shrink-0">
+                   <img src="/logo.png" alt="Developers Paradise Logo" className="w-full h-full object-cover" />
                 </div>
-                <span className="font-bold text-lg tracking-tight text-zinc-950 dark:text-white">
-                  Idea<span className="text-zinc-500 font-medium">Hub</span>
+                <span className="font-bold text-lg tracking-tight text-zinc-950 dark:text-white hidden sm:block">
+                  Developers<span className="text-zinc-500 font-medium">Paradise</span>
                 </span>
               </Link>
               
@@ -78,12 +88,12 @@ export default async function RootLayout({
           <footer className="border-t border-zinc-200 dark:border-white/5 py-8 mt-auto bg-zinc-50 dark:bg-zinc-950">
             <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500 dark:text-zinc-400">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-zinc-900 dark:text-white">IdeaHub</span>
+                <span className="font-bold text-zinc-900 dark:text-white">Developers Paradise</span>
                 <span>&copy; {new Date().getFullYear()} All rights reserved.</span>
               </div>
               <div className="flex items-center gap-6 font-medium">
-                <Link href="#" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Twitter</Link>
-                <Link href="#" className="hover:text-zinc-900 dark:hover:text-white transition-colors">GitHub</Link>
+                <Link href="https://maruttewari.onrender.com/" target="_blank" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Portfolio</Link>
+                <Link href="https://github.com/Teraxyl14" target="_blank" className="hover:text-zinc-900 dark:hover:text-white transition-colors">GitHub</Link>
                 <Link href="#" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms of Service</Link>
               </div>
             </div>

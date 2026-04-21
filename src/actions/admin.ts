@@ -24,10 +24,10 @@ export async function sendAdminTestEmail() {
   
   try {
      await resend.emails.send({
-        from: 'IdeaHub Admin <onboarding@resend.dev>',
+        from: 'Developers Paradise Admin <onboarding@resend.dev>',
         to: email,
-        subject: 'IdeaHub: Admin Test Email Successful',
-        html: '<p>This is a test email dispatched directly from your IdeaHub Admin Dashboard! Your Resend configuration is working perfectly.</p>'
+        subject: 'Developers Paradise: Admin Test Email Successful',
+        html: '<p>This is a test email dispatched directly from your Developers Paradise Admin Dashboard! Your Resend configuration is working perfectly.</p>'
      });
      return { success: true, message: "Test email sent to " + email };
   } catch (error: any) {
