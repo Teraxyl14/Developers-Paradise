@@ -154,7 +154,7 @@ export function IdeaCard({ idea, initiallyExpanded = false }: { idea: any, initi
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="mt-5 pt-5 border-t border-zinc-200 dark:border-white/5 ml-[64px]">
+            <div className="mt-5 pt-5 border-t border-zinc-200 dark:border-white/5 ml-0 md:ml-[64px]">
               <div className="flex flex-wrap gap-2 mb-6">
                 {idea.recommendedStack.map((stack: string) => (
                   <span key={stack} className="px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-md">

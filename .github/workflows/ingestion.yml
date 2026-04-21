@@ -28,7 +28,7 @@ jobs:
 
       - name: Execute Pipeline
         env:
-          GITHUB_GRAPHQL_TOKEN: ${{ secrets.GITHUB_GRAPHQL_TOKEN }}
+          GH_GRAPHQL_TOKEN: ${{ secrets.GH_GRAPHQL_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python ingestion/pipeline.py

@@ -11,7 +11,7 @@ from scrapers import get_all_scraped_data
 
 load_dotenv()
 
-GITHUB_TOKEN = os.getenv("GITHUB_GRAPHQL_TOKEN")
+GITHUB_TOKEN = os.getenv("GH_GRAPHQL_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 DB_URL = os.getenv("DATABASE_URL")
 
