@@ -1,0 +1,40 @@
+name: Autonomous Data Ingestion Pipeline
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every day
+    - cron: '0 0 * * *'
+    # Runs at 00:00 UTC every Friday specifically for the newsletter
+    - cron: '0 0 * * 5'
+  workflow_dispatch: # Allows manual execution from the Actions tab
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ingestion/requirements.txt
+
+      - name: Execute Pipeline
+        env:
+          GITHUB_GRAPHQL_TOKEN: ${{ secrets.GITHUB_GRAPHQL_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python ingestion/pipeline.py
+
+      - name: Trigger Weekly Newsletter (Fridays Only)
+        if: github.event.schedule == '0 0 * * 5' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl -f -X GET "https://YOUR_VERCEL_DOMAIN.vercel.app/api/cron/newsletter" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
