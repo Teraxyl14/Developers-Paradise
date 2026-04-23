@@ -17,6 +17,19 @@ export async function addComment(ideaId: string, content: string) {
     }
   });
 
+  const idea = await prisma.idea.findUnique({ where: { id: ideaId }, select: { authorId: true } });
+  if (idea && idea.authorId && idea.authorId !== session.user.id) {
+      await prisma.notification.create({
+          data: {
+              userId: idea.authorId,
+              actorId: session.user.id,
+              ideaId,
+              type: 'COMMENT',
+              content: 'commented on your idea.'
+          }
+      });
+  }
+
   revalidatePath('/dashboard');
 }
 

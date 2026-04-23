@@ -33,12 +33,40 @@ export async function linkRepository(ideaId: string, url: string, openToCoFounde
 
   const idea = await prisma.idea.findUnique({
     where: { id: ideaId },
-    include: { savedBy: { include: { user: true } } }
+    include: { savedBy: { include: { user: true } }, waitlist: true }
   });
 
   // Automatically update status to IN_PROGRESS if it was OPEN
   if (idea && idea.status === 'OPEN') {
      await prisma.idea.update({ where: { id: ideaId }, data: { status: 'IN_PROGRESS' } });
+  }
+
+  if (idea) {
+      // Notify Author
+      if (idea.authorId && idea.authorId !== session.user.id) {
+          await prisma.notification.create({
+              data: {
+                  userId: idea.authorId,
+                  actorId: session.user.id,
+                  ideaId: idea.id,
+                  type: 'LINK_REPO',
+                  content: 'linked a solution repository to your idea.'
+              }
+          });
+      }
+      
+      // Notify Waitlist
+      const waitlistUserIds = idea.waitlist?.map((w: any) => w.userId).filter((id: string) => id !== session.user.id) || [];
+      if (waitlistUserIds.length > 0) {
+          const notifications = waitlistUserIds.map((userId: string) => ({
+              userId,
+              actorId: session.user.id,
+              ideaId: idea.id,
+              type: 'CHANGELOG' as const,
+              content: 'linked a solution repository to an idea you are waitlisted for.'
+          }));
+          await prisma.notification.createMany({ data: notifications });
+      }
   }
 
   // Send Email Notification to all users who saved this idea
@@ -48,7 +76,8 @@ export async function linkRepository(ideaId: string, url: string, openToCoFounde
         try {
           await resend.emails.send({
             from: 'Developers Paradise <notifications@developersparadise.dev>',
-            to: emails,
+            to: ['noreply@developersparadise.dev'],
+            bcc: emails,
             subject: `Update on saved idea: ${idea.title}`,
             html: `<p>Great news!</p><p>Someone just linked a new solution repository to an idea you saved.</p><p><strong>Idea:</strong> ${idea.title}</p><p><strong>Repository:</strong> <a href="${url}">${url}</a></p>`
           });
@@ -91,6 +120,20 @@ export async function toggleUpvote(ideaId: string) {
     await prisma.upvote.delete({ where: { userId_ideaId: { userId: session.user.id, ideaId } } });
   } else {
     await prisma.upvote.create({ data: { userId: session.user.id, ideaId } });
+    
+    // Notify author of upvote
+    const idea = await prisma.idea.findUnique({ where: { id: ideaId }, select: { authorId: true } });
+    if (idea && idea.authorId && idea.authorId !== session.user.id) {
+        await prisma.notification.create({
+            data: {
+                userId: idea.authorId,
+                actorId: session.user.id,
+                ideaId,
+                type: 'UPVOTE',
+                content: 'upvoted your idea.'
+            }
+        });
+    }
   }
   revalidatePath('/dashboard');
   revalidatePath('/profile');

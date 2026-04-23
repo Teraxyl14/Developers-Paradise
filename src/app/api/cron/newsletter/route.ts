@@ -4,6 +4,10 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy');
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 export async function GET(request: Request) {
   // Simple Security: Ensure only the automated cron service can trigger this endpoint
   const authHeader = request.headers.get('authorization');
@@ -49,10 +53,10 @@ export async function GET(request: Request) {
     // 3. Format the email digest
     const ideasHtml = topIdeas.map(idea => `
       <div style="margin-bottom: 24px; padding: 16px; border: 1px solid #eaeaea; border-radius: 8px;">
-        <h3 style="margin-top: 0; color: #111;">${idea.title}</h3>
-        <p style="color: #666; font-size: 14px;"><strong>Domain:</strong> ${idea.domain} | <strong>Difficulty:</strong> ${idea.difficulty}</p>
-        <p style="color: #444;">${idea.description.substring(0, 150)}...</p>
-        <a href="${process.env.AUTH_URL}/idea/${idea.id}" style="display: inline-block; padding: 8px 16px; background-color: #000; color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;">View & Build This Idea</a>
+        <h3 style="margin-top: 0; color: #111;">${escapeHtml(idea.title)}</h3>
+        <p style="color: #666; font-size: 14px;"><strong>Domain:</strong> ${escapeHtml(idea.domain)} | <strong>Difficulty:</strong> ${escapeHtml(idea.difficulty)}</p>
+        <p style="color: #444;">${escapeHtml((idea.description || '').substring(0, 150))}...</p>
+        <a href="${process.env.AUTH_URL}/idea/${idea.id}" style="display: inline-block; padding: 8px 16px; background-color: #000; color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;">View &amp; Build This Idea</a>
       </div>
     `).join('');
 

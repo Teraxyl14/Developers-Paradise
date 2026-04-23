@@ -1,8 +1,8 @@
 import os
 import time
-import requests
 import json
 from bs4 import BeautifulSoup
+from curl_cffi import requests
 
 class Scraper:
     def __init__(self):
@@ -27,7 +27,7 @@ class GitHubScraper(Scraper):
 
     def scrape(self, limit=5):
         if not self.token or self.token == "your_github_pat":
-            print("[GitHub] Skipping: No valid GITHUB_GRAPHQL_TOKEN found.")
+            print("[GitHub] Skipping: No valid GH_GRAPHQL_TOKEN found.")
             return []
 
         print("[GitHub] Extracting issues via optimized GraphQL...")
@@ -51,23 +51,27 @@ class GitHubScraper(Scraper):
         }
         """ % limit
         
-        response = requests.post(self.endpoint, json={'query': query}, headers=self.headers)
-        if response.status_code != 200:
-            print(f"[GitHub] Error: {response.text}")
-            return []
+        try:
+            response = requests.post(self.endpoint, json={'query': query}, headers=self.headers, impersonate="chrome120")
+            if response.status_code != 200:
+                print(f"[GitHub] Error: HTTP {response.status_code} - {response.text}")
+                return []
 
-        results = []
-        nodes = response.json().get('data', {}).get('search', {}).get('nodes', [])
-        for node in nodes:
-            if not node: continue
-            body = node.get('bodyText') or ''
-            comments = node.get('comments', {}).get('nodes') or []
-            for comment in comments:
-                if comment and comment.get('bodyText'):
-                    body += "\n\n[Comment]: " + comment.get('bodyText', '')
-            results.append(self.format_output(node.get('title'), body, node.get('url')))
-            
-        return results
+            results = []
+            nodes = response.json().get('data', {}).get('search', {}).get('nodes', [])
+            for node in nodes:
+                if not node: continue
+                body = node.get('bodyText') or ''
+                comments = node.get('comments', {}).get('nodes') or []
+                for comment in comments:
+                    if comment and comment.get('bodyText'):
+                        body += "\n\n[Comment]: " + comment.get('bodyText', '')
+                results.append(self.format_output(node.get('title'), body, node.get('url')))
+                
+            return results
+        except Exception as e:
+            print(f"[GitHub] Fatal execution error: {e}")
+            return []
 
 class StackExchangeScraper(Scraper):
     def __init__(self):
@@ -89,7 +93,7 @@ class StackExchangeScraper(Scraper):
                 "pagesize": limit_per_tag
             }
             try:
-                response = requests.get(self.base_url, params=params)
+                response = requests.get(self.base_url, params=params, impersonate="chrome120")
                 data = response.json()
 
                 if "backoff" in data:
@@ -117,7 +121,7 @@ class DiscourseScraper(Scraper):
         results = []
         try:
             # Fetch latest feature topics
-            response = requests.get(f"{self.base_url}/c/feature.json", headers=self.headers)
+            response = requests.get(f"{self.base_url}/c/feature.json", headers=self.headers, impersonate="chrome120")
             topics = response.json().get('topic_list', {}).get('topics', [])
 
             for topic in topics[:limit]:
@@ -128,7 +132,7 @@ class DiscourseScraper(Scraper):
                     # Append print=true to bypass standard 20-post chunk limit
                     url = f"{self.base_url}/t/{topic_slug}/{topic_id}.json?print=true"
                     
-                    topic_resp = requests.get(url, headers=self.headers)
+                    topic_resp = requests.get(url, headers=self.headers, impersonate="chrome120")
                     post_data = topic_resp.json()
                     
                     title = post_data.get('title', '')
@@ -158,12 +162,12 @@ class HackerNewsScraper(Scraper):
         results = []
         try:
             # Target "Ask HN" for direct questions and pain points
-            resp = requests.get(f"{self.base_url}/askstories.json")
+            resp = requests.get(f"{self.base_url}/askstories.json", impersonate="chrome120")
             story_ids = resp.json()[:limit]
 
             for sid in story_ids:
                 try:
-                    story_resp = requests.get(f"{self.base_url}/item/{sid}.json")
+                    story_resp = requests.get(f"{self.base_url}/item/{sid}.json", impersonate="chrome120")
                     story = story_resp.json()
                     
                     if not story or story.get('deleted'): continue
@@ -175,7 +179,7 @@ class HackerNewsScraper(Scraper):
                     kids = story.get('kids') or []
                     for kid_id in kids[:3]:
                         try:
-                            kid_resp = requests.get(f"{self.base_url}/item/{kid_id}.json")
+                            kid_resp = requests.get(f"{self.base_url}/item/{kid_id}.json", impersonate="chrome120")
                             kid = kid_resp.json()
                             if kid and kid.get('text') and not kid.get('deleted'):
                                  body += "\n\n[Comment]: " + kid.get('text', '')
@@ -203,7 +207,7 @@ class NextJsHydrationScraper(Scraper):
         print("[Next.js SSR] Extracting structured DOM from __NEXT_DATA__ hydration blob...")
         results = []
         try:
-            resp = requests.get(self.target_url, headers=self.headers)
+            resp = requests.get(self.target_url, headers=self.headers, impersonate="chrome120")
             soup = BeautifulSoup(resp.text, 'html.parser')
             
             # Extract Next.js Hydration Blob
@@ -238,7 +242,7 @@ class RedditScraper(Scraper):
         for sub, query in queries:
             try:
                 url = f"https://www.reddit.com/r/{sub}/search.json?q={query}&restrict_sr=on&sort=relevance&t=year"
-                resp = requests.get(url, headers=self.headers)
+                resp = requests.get(url, headers=self.headers, impersonate="chrome120")
                 if resp.status_code == 429:
                     print(f"[Reddit] Rate limited on r/{sub}.")
                     continue
@@ -265,7 +269,7 @@ class LobstersScraper(Scraper):
         print("[Lobste.rs] Extracting technical threads from hottest...")
         results = []
         try:
-            resp = requests.get("https://lobste.rs/hottest.json", headers=self.headers)
+            resp = requests.get("https://lobste.rs/hottest.json", headers=self.headers, impersonate="chrome120")
             stories = resp.json()[:limit]
             for story in stories:
                 title = story.get('title', '')
@@ -277,23 +281,61 @@ class LobstersScraper(Scraper):
             print(f"[Lobste.rs] Error: {e}")
         return results
 
+class EnterpriseReviewScraper(Scraper):
+    def scrape(self, limit=3):
+        print("[Enterprise Tier 3] Extracting pain points via TLS-Spoofed DOM Parsing...")
+        results = []
+        targets = ["www.docker.com", "vercel.com"]
+        for target in targets:
+            try:
+                # Target 1-star and 2-star reviews for pure pain points on Trustpilot (uses Cloudflare)
+                url = f"https://www.trustpilot.com/review/{target}?stars=1&stars=2"
+                resp = requests.get(url, headers=self.headers, impersonate="chrome120")
+                
+                if resp.status_code != 200:
+                    print(f"[Enterprise] Access denied or error on {target}: HTTP {resp.status_code}")
+                    continue
+                    
+                soup = BeautifulSoup(resp.text, 'html.parser')
+
+                # Trustpilot utilizes a NEXT_DATA hydration state we can tap into securely
+                next_data = soup.find('script', id='__NEXT_DATA__', type='application/json')
+                if next_data:
+                    blob = json.loads(next_data.string)
+                    raw_string = json.dumps(blob)[:4000] # Give Gemini a chunk to decipher
+                    results.append(self.format_output(f"Enterprise Complaints: {target}", raw_string, url))
+                else:
+                    # Fallback DOM parser
+                    text_content = " ".join([p.text for p in soup.find_all('p')])[:4000]
+                    if text_content:
+                        results.append(self.format_output(f"Enterprise Complaints: {target}", text_content, url))
+
+            except Exception as e:
+                print(f"[Enterprise] Error on {target}: {e}")
+            time.sleep(2)
+        return results
+
 def get_all_scraped_data(github_token):
     print("Starting multi-source ingestion pipeline...")
     all_results = []
     
-    # GitHub (Tier 1)
-    all_results.extend(GitHubScraper(github_token).scrape(limit=2))
-    # Stack Exchange (Tier 1)
-    all_results.extend(StackExchangeScraper().scrape(limit_per_tag=1))
-    # Discourse (Tier 1)
-    all_results.extend(DiscourseScraper().scrape(limit=1))
-    # Hacker News (Tier 1)
-    all_results.extend(HackerNewsScraper().scrape(limit=1))
-    # Reddit (Tier 2/3 Hybrid)
-    all_results.extend(RedditScraper().scrape(limit=1))
-    # Lobste.rs (Tier 1)
-    all_results.extend(LobstersScraper().scrape(limit=2))
-    # Next.js Hydration (Tier 2)
-    all_results.extend(NextJsHydrationScraper().scrape())
+    scrapers = [
+        lambda: GitHubScraper(github_token).scrape(limit=2),
+        lambda: StackExchangeScraper().scrape(limit_per_tag=1),
+        lambda: DiscourseScraper().scrape(limit=1),
+        lambda: HackerNewsScraper().scrape(limit=1),
+        lambda: RedditScraper().scrape(limit=1),
+        lambda: LobstersScraper().scrape(limit=2),
+        lambda: NextJsHydrationScraper().scrape(),
+        lambda: EnterpriseReviewScraper().scrape()
+    ]
     
+    for scrape_func in scrapers:
+        try:
+            results = scrape_func()
+            if results:
+                all_results.extend(results)
+        except Exception as e:
+            print(f"Scraper Failed: {e}")
+            
     return all_results

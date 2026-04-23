@@ -34,6 +34,8 @@ export default async function IdeaPage({ params }: { params: Promise<{ id: strin
         select: { upvotes: true, comments: true }
       },
       upvotes: session?.user?.id ? { where: { userId: session.user.id } } : undefined,
+      waitlist: session?.user?.id ? { where: { userId: session.user.id } } : undefined,
+      marketAnalysis: true,
       author: { select: { name: true, id: true } }
     },
   });

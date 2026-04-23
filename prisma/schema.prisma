@@ -33,6 +33,12 @@ model User {
   comments      Comment[]
   waitlists     Waitlist[]
   submittedIdeas Idea[]      @relation("IdeaAuthor")
+
+  notificationsReceived Notification[] @relation("NotificationRecipient")
+  notificationsTriggered Notification[] @relation("NotificationTriggerer")
+  projectUpdates ProjectUpdate[]
+  messagesSent     Message[] @relation("MessageSender")
+  messagesReceived Message[] @relation("MessageReceiver")
 }
 
 model Account {
@@ -67,6 +73,9 @@ model Idea {
   devTime          String
   domain           String
   recommendedStack String[]
+  sourceCommunities String[]   @default([])
+  firstReportedAt  DateTime?  
+  lastReportedAt   DateTime?  
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
   status           IdeaStatus   @default(OPEN)
@@ -81,6 +90,25 @@ model Idea {
   upvotes          Upvote[]
   comments         Comment[]
   waitlist         Waitlist[]
+  notifications    Notification[]
+  projectUpdates   ProjectUpdate[]
+  messages         Message[]
+  marketAnalysis   MarketAnalysis?
+  
+  clusterId        String?
+  cluster          Cluster?     @relation(fields: [clusterId], references: [id], onDelete: SetNull)
+}
+
+model Cluster {
+  id        String   @id @default(cuid())
+  summary   String   // AI generated name for the cluster (e.g., "Postgres Connection Issues")
+  size      Int      // Number of ideas in this cluster
+  x         Float    // 2D projection X coordinate
+  y         Float    // 2D projection Y coordinate
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ideas     Idea[]
 }
 
 model Tag {
@@ -115,15 +143,84 @@ model Waitlist {
   @@id([userId, ideaId])
 }
 
+model MarketAnalysis {
+  id              String   @id @default(cuid())
+  ideaId          String   @unique
+  saturationScore String   // "Low", "Medium", "High"
+  competitors     Json
+  verdict         String   @db.Text
+  wedgeStrategy   String[] // Hyper-niche features ignored by giants
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  idea            Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+}
+
 model Repository {
-  id               String   @id @default(cuid())
-  url              String
-  userId           String
-  ideaId           String
-  openToCoFounders Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  idea             Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  id                 String   @id @default(cuid())
+  url                String
+  userId             String
+  ideaId             String
+  openToCoFounders   Boolean  @default(false)
+  perfScore          Int?
+  a11yScore          Int?
+  seoScore           Int?
+  screenshotUrl      String?  @db.Text
+  architectureReport String?  @db.Text
+  createdAt          DateTime @default(now())
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  idea               Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  projectUpdates     ProjectUpdate[]
+}
+
+enum NotificationType {
+  UPVOTE
+  COMMENT
+  LINK_REPO
+  CHANGELOG
+  MESSAGE
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   // Recipient
+  actorId   String?  // Who triggered it
+  ideaId    String?  // Related context
+  type      NotificationType
+  content   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor     User?    @relation("NotificationTriggerer", fields: [actorId], references: [id], onDelete: SetNull)
+  idea      Idea?    @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+}
+
+model ProjectUpdate {
+  id        String   @id @default(cuid())
+  ideaId    String
+  authorId  String
+  repoId    String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  idea      Idea       @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  repo      Repository @relation(fields: [repoId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  ideaId     String?  // Optional context
+  content    String   @db.Text
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  sender     User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User     @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  idea       Idea?    @relation(fields: [ideaId], references: [id], onDelete: SetNull)
 }
 
 model Upvote {
@@ -133,6 +230,14 @@ model Upvote {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   idea      Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
   @@id([userId, ideaId])
+}
+
+model FragileDependency {
+  id             String   @id @default(cuid())
+  name           String   @unique // e.g. "next-auth", "mongoose"
+  ecosystem      String   @default("npm") // e.g. npm, pip, cargo, unknown
+  complaintCount Int      @default(1)
+  lastReportedAt DateTime @default(now())
 }
 
 model Comment {

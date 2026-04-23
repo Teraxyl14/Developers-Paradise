@@ -4,7 +4,7 @@ on:
   schedule:
     # Runs at 00:00 UTC every day
     - cron: '0 0 * * *'
-    # Runs at 00:00 UTC every Friday specifically for the newsletter
+    # Runs at 00:00 UTC every Friday for the newsletter
     - cron: '0 0 * * 5'
   workflow_dispatch: # Allows manual execution from the Actions tab
 
@@ -33,8 +33,18 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python ingestion/pipeline.py
 
+      - name: Run Clustering (Post-Pipeline)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python ingestion/cluster_ideas.py
+
       - name: Trigger Weekly Newsletter (Fridays Only)
         if: github.event.schedule == '0 0 * * 5' || github.event_name == 'workflow_dispatch'
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          # TODO: Replace with your actual deployed domain via GitHub Secrets
+          NEWSLETTER_URL: ${{ secrets.NEWSLETTER_URL }}
         run: |
-          curl -f -X GET "https://developers-paradise-wmjn.vercel.app//api/cron/newsletter" \
+          curl -f -X GET "https://developers-paradise-wmjn.vercel.app/api/cron/newsletter" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
