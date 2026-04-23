@@ -72,10 +72,11 @@ graph TD;
 <br/>
 
 ## 💡 Key Features
-- **Idea Dashboard**: View dynamic feeds of AI-curated and user-submitted ideas.
-- **Trending & Leaderboards**: See which pain points are resonating most with the community by tracking Upvotes and Waitlist sign-ups.
-- **Deep Dives**: Individual `idea/[id]` pages featuring difficulty tags, estimated dev times, recommended tech stacks, and source links.
-- **Community Interaction**: Save ideas to your profile, join waitlists, comment, and declare you're building them with a linked GitHub Repository.
+- **Premium UI/UX**: Built with Framer Motion, Tailwind CSS v4, and custom glassmorphism utilities for a dynamic, modern SaaS experience.
+- **Market Intelligence & Trends**: Visualize "The Market Galaxy" through K-Means AI clustering to find high-density market demand, along with charts for stack/domain trends.
+- **AI Architecture Roasts**: Link your GitHub repo to an idea and let Gemini 2.5 Pro generate a customized "Roast" analyzing your tech stack, architecture, and deployment strategy.
+- **Gamified Leaderboard**: Climb the ranks on an animated top-3 podium based on ideas submitted, upvotes received, and repos linked.
+- **Idea Dashboard**: View dynamic feeds of AI-curated and user-submitted ideas, ranked by Trending, Latest, or Contrarian demand signals.
 - **Multi-Source Autonomous Scraping**: Automatically scheduled via GitHub Actions (`cron`) to scrape StackOverflow, GitHub, Reddit, HackerNews, and more.
 
 <br/>
