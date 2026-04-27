@@ -74,6 +74,7 @@ model Idea {
   domain           String
   recommendedStack String[]
   sourceCommunities String[]   @default([])
+  mentionCount     Int          @default(1)  // Cross-source mention counter (how many independent sources reported this)
   firstReportedAt  DateTime?  
   lastReportedAt   DateTime?  
   createdAt        DateTime     @default(now())
@@ -105,6 +106,7 @@ model Cluster {
   size      Int      // Number of ideas in this cluster
   x         Float    // 2D projection X coordinate
   y         Float    // 2D projection Y coordinate
+  pmfScore  Float?   // Composite Product-Market Fit score (0-100)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
