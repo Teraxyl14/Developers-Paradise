@@ -54,19 +54,21 @@ def parse_with_gemini(scraped_item):
     Analyze this raw extracted developer forum data. Determine if it contains a valid software pain point or feature request.
     If it DOES, extract and categorize it into a JSON object matching this exact schema:
     {{
-        "title": "String (Short, punchy project name)",
-        "description": "String (Clear problem statement and proposed solution)",
+        "title": "String (Short, punchy project name — NOT the original post title, but a rewritten actionable tool/product name)",
+        "description": "String (Clear problem statement and proposed solution, 2-4 sentences)",
         "difficulty": "String (Beginner, Intermediate, Advanced)",
-        "devTime": "String (e.g., '1-2 weeks')",
-        "domain": "String (e.g., 'Web Development', 'DevOps', 'Data Science')",
+        "devTime": "String (e.g., '1-2 weeks', '2-3 months')",
+        "domain": "String (e.g., 'Web Development', 'DevOps', 'Data Science', 'Mobile', 'Security', 'AI/ML', 'Database', 'CLI Tools')",
         "recommendedStack": ["String", "String"],
         "tags": ["String", "String"],
-        "fragileDependencies": ["String"] // Identify specific open-source libraries or frameworks (e.g., 'prisma', 'react-router', 'pandas') that are the root cause of the complaint. Return as array of lowercase strings.
+        "fragileDependencies": [
+            {{"name": "string (lowercase package name)", "ecosystem": "string (npm, pip, cargo, go, gem, or unknown)"}}
+        ]
     }}
-    If it DOES NOT contain a valid software idea (it's just conversational noise or an error log without a tool idea), return an empty JSON object: {{}}
+    If it DOES NOT contain a valid software idea (it's just conversational noise, a tutorial, a generic question, or an error log without a clear tool idea), return an empty JSON object: {{}}
     
     Raw Title: {scraped_item.get('title', '')}
-    Raw Body: {scraped_item.get('bodyText', '')}
+    Raw Body: {scraped_item.get('bodyText', '')[:3000]}
     """
     
     try:
@@ -85,7 +87,7 @@ def parse_with_gemini(scraped_item):
         print(f"Gemini parsing error: {e}")
         return None
 
-def insert_into_db(parsed_data, source_url, conn, embedding_result=None, oldest_date=None, newest_date=None):
+def insert_into_db(parsed_data, source_url, conn, community="Unknown", embedding_result=None, oldest_date=None, newest_date=None):
     """Inserts parsed Idea and handles Tag relations in PostgreSQL."""
     cur = conn.cursor()
     try:
@@ -95,9 +97,12 @@ def insert_into_db(parsed_data, source_url, conn, embedding_result=None, oldest_
         first_rep = oldest_date if oldest_date else None
         last_rep = newest_date if newest_date else None
         
+        # Build source communities array from the scraper's community tag
+        source_communities = [community] if community and community != "Unknown" else []
+        
         cur.execute("""
-            INSERT INTO "Idea" (id, title, description, "sourceUrl", difficulty, "devTime", domain, "recommendedStack", "firstReportedAt", "lastReportedAt", "createdAt", "updatedAt", status)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW(), 'OPEN')
+            INSERT INTO "Idea" (id, title, description, "sourceUrl", difficulty, "devTime", domain, "recommendedStack", "sourceCommunities", "firstReportedAt", "lastReportedAt", "createdAt", "updatedAt", status)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW(), 'OPEN')
             RETURNING id;
         """, (
             idea_id, 
@@ -108,6 +113,7 @@ def insert_into_db(parsed_data, source_url, conn, embedding_result=None, oldest_
             parsed_data.get('devTime') or '1-2 weeks', 
             parsed_data.get('domain') or 'General',
             parsed_data.get('recommendedStack') or [],
+            source_communities,
             first_rep,
             last_rep
         ))
@@ -139,19 +145,35 @@ def insert_into_db(parsed_data, source_url, conn, embedding_result=None, oldest_
                 ON CONFLICT DO NOTHING;
             """, (idea_id, tag_id))
             
-        # Process Fragile Dependencies (Phantom Tool Extractor)
+        # Process Fragile Dependencies (now with ecosystem support)
         fragile_deps = parsed_data.get('fragileDependencies') or []
         for dep in fragile_deps:
-            dep_name = str(dep).lower().strip()
+            # Support both old format (string) and new format (object with name/ecosystem)
+            if isinstance(dep, dict):
+                dep_name = str(dep.get('name', '')).lower().strip()
+                dep_ecosystem = str(dep.get('ecosystem', 'unknown')).lower().strip()
+            else:
+                dep_name = str(dep).lower().strip()
+                dep_ecosystem = 'unknown'
+            
             if not dep_name: continue
+            
+            # Validate ecosystem
+            valid_ecosystems = {'npm', 'pip', 'cargo', 'go', 'gem', 'nuget', 'maven', 'unknown'}
+            if dep_ecosystem not in valid_ecosystems:
+                dep_ecosystem = 'unknown'
             
             cur.execute("""
                 INSERT INTO "FragileDependency" (id, name, ecosystem, "complaintCount", "lastReportedAt")
-                VALUES (%s, %s, 'unknown', 1, NOW())
+                VALUES (%s, %s, %s, 1, NOW())
                 ON CONFLICT (name) DO UPDATE SET 
                   "complaintCount" = "FragileDependency"."complaintCount" + 1,
-                  "lastReportedAt" = NOW();
-            """, (f"fd_{uuid.uuid4().hex[:22]}", dep_name))
+                  "lastReportedAt" = NOW(),
+                  ecosystem = CASE 
+                    WHEN "FragileDependency".ecosystem = 'unknown' AND %s != 'unknown' THEN %s 
+                    ELSE "FragileDependency".ecosystem 
+                  END;
+            """, (f"fd_{uuid.uuid4().hex[:22]}", dep_name, dep_ecosystem, dep_ecosystem, dep_ecosystem))
 
         conn.commit()
         print(f"✅ Inserted to DB: {parsed_data.get('title')}")
@@ -210,11 +232,16 @@ def run_pipeline():
         print(f"Processing {len(new_items)} NEW items through Gemini LLM...")
         client = genai.Client(api_key=GEMINI_API_KEY)
         
+        processed = 0
+        inserted = 0
+        skipped_noise = 0
+        failed = 0
+        
         # 3. Parse and Insert
         for item in new_items:
             if not item.get('bodyText'): continue
             
-            print(f"Parsing: {item.get('title')}")
+            print(f"\n[{processed+1}/{len(new_items)}] Parsing: {item.get('title', '')[:80]}...")
             time.sleep(1.5) # Prevent Gemini API Rate Limiting (HTTP 429)
             try:
                 parsed_json = parse_with_gemini(item)
@@ -234,12 +261,27 @@ def run_pipeline():
                          print(f"Embedding failed: {emb_e}")
                     
                     oldest, newest = get_historical_dates(parsed_json.get('title', ''))
-                    insert_into_db(parsed_json, item.get('url'), conn, embedding_result, oldest, newest)
+                    community = item.get('community', 'Unknown')
+                    insert_into_db(parsed_json, item.get('url'), conn, community, embedding_result, oldest, newest)
+                    inserted += 1
                 else:
-                    print(f"Skipped: LLM deemed '{item.get('title')}' as noise.")
+                    print(f"  → Skipped: LLM deemed this as noise.")
+                    skipped_noise += 1
                     
             except Exception as e:
-                print(f"Failed to process '{item.get('title')}': {e}")
+                print(f"  → Failed: {e}")
+                failed += 1
+            
+            processed += 1
+        
+        print(f"\n{'=' * 60}")
+        print(f"PIPELINE COMPLETE")
+        print(f"  Processed: {processed}")
+        print(f"  Inserted:  {inserted}")
+        print(f"  Noise:     {skipped_noise}")
+        print(f"  Failed:    {failed}")
+        print(f"{'=' * 60}")
+        
     finally:
         if conn:
             conn.close()
