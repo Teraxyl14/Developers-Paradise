@@ -1,7 +1,7 @@
 <div align="center">
   <img src="./public/logo.png" alt="Developers-Paradise Logo" width="120" style="border-radius: 20px;"/>
   <h1>🌴 Developers-Paradise</h1>
-  <p><strong>A Full-Stack AI-Powered Pain Point & Idea Discovery Platform</strong></p>
+  <p><strong>A Full-Stack AI-Powered Developer Problem Discovery Platform</strong></p>
 
   <p>
     <a href="https://github.com/Teraxyl14/Developers-Paradise/commits/main">
@@ -13,6 +13,7 @@
     <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js" alt="Next.js" />
     <img src="https://img.shields.io/badge/Python-3.11+-blue?style=flat-square&logo=python" alt="Python" />
     <img src="https://img.shields.io/badge/AI-Gemini_2.5_Pro-orange?style=flat-square&logo=google" alt="Gemini 2.5 Pro" />
+    <img src="https://img.shields.io/badge/Version-1.5-purple?style=flat-square" alt="Version 1.5" />
   </p>
 </div>
 
@@ -72,12 +73,25 @@ graph TD;
 <br/>
 
 ## 💡 Key Features
+
+### Core Platform
 - **Premium UI/UX**: Built with Framer Motion, Tailwind CSS v4, and custom glassmorphism utilities for a dynamic, modern SaaS experience.
-- **Market Intelligence & Trends**: Visualize "The Market Galaxy" through K-Means AI clustering to find high-density market demand, along with charts for stack/domain trends.
+- **Idea Dashboard**: View dynamic feeds of AI-curated and user-submitted ideas, ranked by Trending, Latest, or Contrarian demand signals.
+- **Market Intelligence & Trends**: Visualize "The Market Galaxy" — a PMF-scored heatmap of AI-clustered developer complaints, color-coded by validated market demand (cool blue → hot red).
 - **AI Architecture Roasts**: Link your GitHub repo to an idea and let Gemini 2.5 Pro generate a customized "Roast" analyzing your tech stack, architecture, and deployment strategy.
 - **Gamified Leaderboard**: Climb the ranks on an animated top-3 podium based on ideas submitted, upvotes received, and repos linked.
-- **Idea Dashboard**: View dynamic feeds of AI-curated and user-submitted ideas, ranked by Trending, Latest, or Contrarian demand signals.
 - **Multi-Source Autonomous Scraping**: Automatically scheduled via GitHub Actions (`cron`) to scrape StackOverflow, GitHub, Reddit, HackerNews, and more.
+
+### V1.5 — Quality of Life (Latest)
+- **Inline Discuss**: The "Discuss" button now expands the idea card, scrolls to comments, and auto-focuses the input — no page navigation required.
+- **Auth-Gated Interactions**: Unauthenticated users can browse freely; clicking Upvote, Save, Waitlist, or Discuss redirects to login.
+- **Revamped Filters**: Labeled filter groups (Difficulty + Domain dropdown), live count badges, and a "Clear filters" button for the dashboard feed.
+- **Profile Upgrade**: Tabbed interface (Edit / My Ideas / Saved / Projects), activity stats bar, 4 social links (GitHub, Twitter, Website, LinkedIn), and "Member since" date.
+- **Distinct Chart Palettes**: Semantic colors for difficulty (green/amber/red), teal for domains, purple gradient for stacks — no more visual confusion.
+- **PMF Heatmap Galaxy**: Market Galaxy now includes a legend, info callout, cluster name labels, and a continuous PMF color scale.
+- **Admin Access Control**: Styled "Access Denied" page for unauthorized users instead of a silent redirect.
+- **Click Feedback**: All interactive buttons now have `active:scale-95` tactile feedback for instant responsiveness.
+- **Cleaner Branding**: Navbar shows logo icon only; replaced all overused "pain point" terminology with varied vocabulary.
 
 <br/>
 
@@ -112,7 +126,8 @@ Developers-Paradise/
 ├── src/                       # 🌐 Next.js Platform
 │   ├── actions/               # Server Actions (Mutations & DB ops)
 │   ├── app/                   # App Router pages (admin, dashboard, trends, etc.)
-│   ├── components/            # Reusable UI components (IdeaCard, ThemeToggle)
+│   │   └── profile/           # Tabbed profile page with stats & social links
+│   ├── components/            # Reusable UI components (IdeaCard, CommentSection, DashboardFeed)
 │   ├── lib/                   # Utility functions & Prisma client instantiation
 │   └── auth.ts                # NextAuth configuration
 ├── .github/workflows/         # 🤖 GitHub Actions CI/CD (Pipeline Cron)
@@ -171,6 +186,32 @@ source venv/bin/activate  # Or `venv\Scripts\activate` on Windows
 pip install -r ingestion/requirements.txt
 python ingestion/pipeline.py
 ```
+
+<br/>
+
+## 📋 Changelog
+
+### v1.5 — Quality of Life Overhaul
+- Inline comment expansion via Discuss button
+- Auth-gated interactions (login redirect for unauthenticated users)
+- PMF heatmap coloring, legend, and labels for Market Galaxy
+- Distinct color palettes per chart type
+- Dashboard filter revamp with domain dropdown and count badges
+- Profile upgrade: tabbed layout, stats bar, 4 social link fields
+- Navbar logo icon only, removed redundant brand text
+- Replaced all "pain point" copy with varied terminology
+- Admin access restricted to allowlisted emails with styled Access Denied page
+- Tactile button feedback (`active:scale-95`) on all interactions
+- Increased card spacing to reduce dashboard crowding
+
+### v1.0 — Initial Release
+- Full-stack Next.js 16 platform with Prisma + PostgreSQL
+- Autonomous Python scraping pipeline (7 sources)
+- Gemini 2.5 Pro AI analysis and structuring
+- Market Galaxy scatter visualization
+- Gamified leaderboard with animated podium
+- AI Architecture Roasts for linked repos
+- Newsletter system via Resend
 
 <br/>
 
