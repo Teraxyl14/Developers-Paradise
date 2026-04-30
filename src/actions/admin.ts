@@ -6,10 +6,12 @@ import { revalidatePath } from "next/cache"
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy');
 
+const ADMIN_EMAILS = ['maruttewari12@gmail.com', 'myraanand06@gmail.com'];
+
 async function requireAdmin() {
   const session = await auth();
   if (!session?.user?.email) throw new Error("Unauthorized");
-  if (session.user.email !== process.env.ADMIN_EMAIL) {
+  if (!ADMIN_EMAILS.includes(session.user.email)) {
       throw new Error("Forbidden: Admin access required");
   }
   return session.user.email;

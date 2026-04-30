@@ -80,23 +80,23 @@ export function TrendsDashboard({ domainData, stackData, difficultyData, cluster
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       
       {/* Market Galaxy */}
-      <div className="bg-zinc-950 border border-zinc-800 dark:border-white/[0.06] rounded-2xl p-6 shadow-sm md:col-span-3 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-zinc-950 to-zinc-950 pointer-events-none" />
+      <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-950 border border-indigo-200/50 dark:border-white/[0.06] rounded-2xl p-6 shadow-sm md:col-span-3 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-200/30 via-transparent to-transparent dark:from-indigo-900/20 dark:via-zinc-950 dark:to-zinc-950 pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4 relative z-10">
           <div>
-            <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
+            <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-1 flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
               The Market Galaxy
             </h3>
-            <p className="text-sm text-zinc-500 ml-10">AI-clustered developer complaints mapped by market demand.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-500 ml-10">AI-clustered developer complaints mapped by market demand.</p>
           </div>
 
           {/* Legend */}
-          <div className="flex flex-col gap-2 text-xs text-zinc-400 bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 min-w-[200px]">
+          <div className="flex flex-col gap-2 text-xs text-zinc-500 dark:text-zinc-400 bg-white/80 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 min-w-[200px]">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-zinc-600 border border-zinc-500" />
+              <div className="w-4 h-4 rounded-full bg-zinc-300 dark:bg-zinc-600 border border-zinc-400 dark:border-zinc-500" />
               <span>Bubble size = cluster size (# of ideas)</span>
             </div>
             <div className="flex items-center gap-2">
@@ -107,9 +107,9 @@ export function TrendsDashboard({ domainData, stackData, difficultyData, cluster
         </div>
 
         {/* Info callout */}
-        <div className="flex items-start gap-2 bg-indigo-500/5 border border-indigo-500/10 rounded-lg p-3 mb-4 relative z-10">
-          <Info className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-indigo-300/80">Each bubble represents a cluster of similar developer complaints. Larger, hotter bubbles indicate higher validated market demand. Hover to see details.</p>
+        <div className="flex items-start gap-2 bg-indigo-100/60 dark:bg-indigo-500/5 border border-indigo-200/50 dark:border-indigo-500/10 rounded-lg p-3 mb-4 relative z-10">
+          <Info className="w-4 h-4 text-indigo-500 dark:text-indigo-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-indigo-700/80 dark:text-indigo-300/80">Each bubble represents a cluster of similar developer complaints. Larger, hotter bubbles indicate higher validated market demand. Hover to see details.</p>
         </div>
         
         <div className="h-96 w-full min-w-0 relative z-10">
@@ -123,7 +123,7 @@ export function TrendsDashboard({ domainData, stackData, difficultyData, cluster
                 {clusterData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={getPMFColor(entry.pmfScore || 0)} fillOpacity={0.85} stroke={getPMFColor(entry.pmfScore || 0)} strokeWidth={1} />
                 ))}
-                <LabelList dataKey="summary" position="top" style={{ fill: '#a1a1aa', fontSize: 10, fontWeight: 600 }} />
+                <LabelList dataKey="summary" position="top" style={{ fill: '#71717a', fontSize: 10, fontWeight: 600 }} />
               </Scatter>
             </ScatterChart>
           </ResponsiveContainer>
