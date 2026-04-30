@@ -5,10 +5,13 @@ const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
-  const isProtectedRoute = req.nextUrl.pathname.startsWith('/dashboard') || req.nextUrl.pathname.startsWith('/profile');
+  const { pathname } = req.nextUrl;
+  const isProtectedRoute = pathname.startsWith('/profile') || pathname.startsWith('/submit') || pathname.startsWith('/inbox');
 
   if (isProtectedRoute && !isLoggedIn) {
-    return Response.redirect(new URL('/api/auth/signin', req.nextUrl));
+    const signInUrl = new URL('/api/auth/signin', req.nextUrl);
+    signInUrl.searchParams.set('callbackUrl', pathname);
+    return Response.redirect(signInUrl);
   }
 })
 

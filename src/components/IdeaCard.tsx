@@ -23,7 +23,7 @@ export function IdeaCard({ idea, initiallyExpanded = false }: { idea: any, initi
 
   const requireAuth = () => {
     if (!session?.user?.id) {
-      router.push('/api/auth/signin');
+      router.push('/api/auth/signin?callbackUrl=/dashboard');
       return false;
     }
     return true;

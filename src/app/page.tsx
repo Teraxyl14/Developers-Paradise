@@ -88,7 +88,7 @@ export default function Home() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <Link 
-              href="/api/auth/signin" 
+              href="/api/auth/signin?callbackUrl=/dashboard" 
               className="group relative flex items-center justify-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-semibold py-3 px-8 rounded-xl transition-all hover:bg-zinc-800 dark:hover:bg-zinc-100 shadow-lg shadow-zinc-900/10 dark:shadow-white/10 hover:shadow-xl hover:shadow-zinc-900/20 dark:hover:shadow-white/20 hover:-translate-y-0.5"
             >
               Get Started
