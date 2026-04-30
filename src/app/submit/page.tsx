@@ -9,7 +9,7 @@ export default function SubmitIdeaPage() {
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg shadow-indigo-500/20 mb-4">
           <Lightbulb className="w-6 h-6 text-white" />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Submit a Pain Point</h1>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">Submit a Problem</h1>
         <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed">
           What&apos;s a problem you constantly face as a developer that someone should build a tool for?
         </p>
@@ -40,7 +40,7 @@ export default function SubmitIdeaPage() {
               required 
               rows={4} 
               className="w-full bg-transparent text-sm text-zinc-700 dark:text-zinc-300 focus:outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-700 leading-relaxed resize-none transition-colors"
-              placeholder="Describe the pain point clearly — who faces it, how often, and what a solution would look like..." 
+              placeholder="Describe the problem clearly — who faces it, how often, and what a solution would look like..." 
             />
           </div>
 

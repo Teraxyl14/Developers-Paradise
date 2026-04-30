@@ -1,10 +1,10 @@
 "use client"
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Terminal, Zap, Search, GitBranch, BarChart3, Lightbulb, Bot, Rocket, ChevronRight } from "lucide-react";
+import { ArrowRight, Zap, Search, GitBranch, BarChart3, Lightbulb, Bot, Rocket, ChevronRight } from "lucide-react";
 
 const stats = [
-  { label: "Pain Points Scraped", value: "2,400+", icon: Search },
+  { label: "Problems Discovered", value: "2,400+", icon: Search },
   { label: "Active Builders", value: "150+", icon: GitBranch },
   { label: "AI Analyses Run", value: "800+", icon: Bot },
 ]
@@ -13,7 +13,7 @@ const features = [
   {
     icon: Search,
     title: "AI-Powered Discovery",
-    description: "We scrape GitHub discussions, StackOverflow, and developer forums to find validated pain points — not hypothetical ideas.",
+    description: "We scrape GitHub discussions, StackOverflow, and developer forums to find validated problems — not hypothetical ideas.",
     gradient: "from-blue-500 to-cyan-500",
   },
   {
@@ -82,24 +82,24 @@ export default function Home() {
           
           {/* Subtitle */}
           <p className="text-lg sm:text-xl text-zinc-600 dark:text-zinc-400 mb-10 max-w-2xl leading-relaxed">
-            Stop guessing. We scrape, parse, and rank <strong className="text-zinc-900 dark:text-zinc-200">real developer pain points</strong> from GitHub — so you build tools people will pay for.
+            Stop guessing. We scrape, parse, and rank <strong className="text-zinc-900 dark:text-zinc-200">real developer problems</strong> from across the web — so you build tools people will pay for.
           </p>
           
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <Link 
-              href="/dashboard" 
+              href="/api/auth/signin" 
               className="group relative flex items-center justify-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-semibold py-3 px-8 rounded-xl transition-all hover:bg-zinc-800 dark:hover:bg-zinc-100 shadow-lg shadow-zinc-900/10 dark:shadow-white/10 hover:shadow-xl hover:shadow-zinc-900/20 dark:hover:shadow-white/20 hover:-translate-y-0.5"
             >
-              Explore Ideas
+              Get Started
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link 
-              href="/api/auth/signin" 
+              href="/dashboard" 
               className="flex items-center justify-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 text-zinc-700 dark:text-zinc-300 font-medium py-3 px-8 rounded-xl transition-all hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:-translate-y-0.5 shadow-sm"
             >
-              <Terminal className="w-4 h-4 text-zinc-400" />
-              Developer Login
+              <Search className="w-4 h-4 text-zinc-400" />
+              Browse Ideas
             </Link>
           </div>
 
@@ -151,7 +151,7 @@ export default function Home() {
             <Zap className="w-3.5 h-3.5" /> How it works
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white tracking-tight mb-4">
-            From pain point to shipped product
+            From problem to shipped product
           </h2>
           <p className="text-zinc-500 dark:text-zinc-400 max-w-lg mx-auto">Three steps to find your next project that people actually want to use.</p>
         </motion.div>

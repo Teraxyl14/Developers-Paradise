@@ -1,11 +1,12 @@
 "use client"
-import { useState, useOptimistic, startTransition, useTransition } from "react"
+import { useState, useOptimistic, startTransition, useTransition, useRef } from "react"
 import { toggleSaveIdea, linkRepository, toggleUpvote, updateIdeaStatus, toggleWaitlist } from "@/actions/interactions"
 import { deleteIdea } from "@/actions/submissions"
 import { runPerformanceAudit } from "@/actions/audit"
 import { generateRepoRoast } from "@/actions/roast"
 import { CommentSection } from "@/components/CommentSection"
 import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronUp, Bookmark, ExternalLink, MessageSquare, Trash2, ArrowUpRight, CheckCircle2, Clock, HandMetal, Users, Flame, Loader2, BarChart2 } from "lucide-react"
@@ -14,8 +15,19 @@ import { MarketIntelligence } from "@/components/MarketIntelligence"
 
 export function IdeaCard({ idea, initiallyExpanded = false }: { idea: any, initiallyExpanded?: boolean }) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [expanded, setExpanded] = useState(initiallyExpanded);
   const [repoUrl, setRepoUrl] = useState("");
+  const [showComments, setShowComments] = useState(false);
+  const commentRef = useRef<HTMLDivElement>(null);
+
+  const requireAuth = () => {
+    if (!session?.user?.id) {
+      router.push('/api/auth/signin');
+      return false;
+    }
+    return true;
+  };
   
   const isAuthor = session?.user?.id === idea.authorId;
   const commentCount = idea._count?.comments || 0;
@@ -30,7 +42,7 @@ export function IdeaCard({ idea, initiallyExpanded = false }: { idea: any, initi
 
   const handleUpvote = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!session?.user?.id) return;
+    if (!requireAuth()) return;
     
     startTransition(() => {
       addOptUpvoted(!optUpvoted);
@@ -42,7 +54,7 @@ export function IdeaCard({ idea, initiallyExpanded = false }: { idea: any, initi
 
   const handleWaitlist = async (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    if (!session?.user?.id) return;
+    if (!requireAuth()) return;
     
     startTransition(() => {
       addOptWaitlisted(!optWaitlisted);
@@ -54,13 +66,22 @@ export function IdeaCard({ idea, initiallyExpanded = false }: { idea: any, initi
 
   const handleSave = async (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    if (!session?.user?.id) return;
+    if (!requireAuth()) return;
     
     startTransition(() => {
       addOptSaved(!optSaved);
     });
     
     await toggleSaveIdea(idea.id);
+  };
+
+  const handleDiscuss = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!expanded) setExpanded(true);
+    setShowComments(true);
+    setTimeout(() => {
+      commentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 350);
   };
 
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
@@ -111,7 +132,7 @@ export function IdeaCard({ idea, initiallyExpanded = false }: { idea: any, initi
         <div className="flex items-start gap-4 flex-1 min-w-0">
           <button 
             onClick={handleUpvote}
-            className={`flex flex-col items-center justify-center min-w-[48px] h-14 rounded-lg border transition-all shrink-0 ${optUpvoted ? 'border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500' : 'border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white'}`}
+            className={`flex flex-col items-center justify-center min-w-[48px] h-14 rounded-lg border transition-all shrink-0 active:scale-95 ${optUpvoted ? 'border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500' : 'border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white'}`}
           >
             <ChevronUp className={`w-6 h-6 -mb-1 ${optUpvoted ? 'stroke-[3px]' : 'stroke-2'}`} />
             <span className="text-sm font-bold">{optUpvoteCount}</span>
@@ -213,19 +234,19 @@ export function IdeaCard({ idea, initiallyExpanded = false }: { idea: any, initi
                     Source <ExternalLink className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
                   </a>
                 )}
-                <Link href={`/idea/${idea.id}`} className="flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-200 transition-colors border border-zinc-200 dark:border-white/5">
-                  Discuss <MessageSquare className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
-                </Link>
+                <button onClick={handleDiscuss} className="flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-200 transition-all active:scale-95 border border-zinc-200 dark:border-white/5">
+                  Discuss ({commentCount}) <MessageSquare className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
+                </button>
                 <button 
                   onClick={handleWaitlist} 
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all border ${optWaitlisted ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/30' : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200 dark:border-white/5'}`}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all active:scale-95 border ${optWaitlisted ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/30' : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200 dark:border-white/5'}`}
                 >
                   <HandMetal className={`w-3.5 h-3.5 ${optWaitlisted ? 'fill-current' : ''}`} />
                   {optWaitlisted ? `Waitlisted (${optWaitlistCount})` : `Join Waitlist (${optWaitlistCount})`}
                 </button>
                 <button 
                   onClick={handleSave} 
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all border ${optSaved ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/30' : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200 dark:border-white/5'}`}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all active:scale-95 border ${optSaved ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/30' : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200 dark:border-white/5'}`}
                 >
                   <Bookmark className={`w-3.5 h-3.5 ${optSaved ? 'fill-current' : ''}`} />
                   {optSaved ? 'Saved' : 'Save'}
@@ -324,7 +345,9 @@ export function IdeaCard({ idea, initiallyExpanded = false }: { idea: any, initi
 
               <MarketIntelligence ideaId={idea.id} initialAnalysis={idea.marketAnalysis} />
 
-              <CommentSection ideaId={idea.id} initialCount={commentCount} />
+              <div ref={commentRef}>
+                <CommentSection ideaId={idea.id} initialCount={commentCount} forceOpen={showComments} />
+              </div>
             </div>
           </motion.div>
         )}

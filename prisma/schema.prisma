@@ -25,6 +25,8 @@ model User {
   bio           String?
   githubUrl     String?
   twitterUrl    String?
+  websiteUrl    String?
+  linkedinUrl   String?
   accounts      Account[]
   sessions      Session[]
   savedIdeas    SavedIdea[]

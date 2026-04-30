@@ -16,7 +16,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Developers Paradise | Discover Validated Dev Problems",
-  description: "Find validated software developer pain points to build your next project.",
+  description: "Discover validated developer problems and build your next project.",
   icons: {
     icon: [
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
@@ -45,12 +45,9 @@ export default async function RootLayout({
             <div className="max-w-6xl mx-auto flex h-14 items-center justify-between px-4 md:px-6">
               <div className="flex items-center gap-6">
                 <Link href="/" className="flex items-center gap-2.5 group">
-                  <div className="w-8 h-8 rounded-lg overflow-hidden shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition-all border border-zinc-200 dark:border-white/10 shrink-0 group-hover:scale-105">
+                  <div className="w-9 h-9 rounded-lg overflow-hidden shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition-all border border-zinc-200 dark:border-white/10 shrink-0 group-hover:scale-105">
                      <img src="/logo.png" alt="Developers Paradise Logo" className="w-full h-full object-cover" />
                   </div>
-                  <span className="font-bold text-lg tracking-tight text-zinc-950 dark:text-white hidden sm:block">
-                    Dev<span className="text-gradient">Paradise</span>
-                  </span>
                 </Link>
 
                 {/* Desktop Navigation */}
@@ -87,7 +84,7 @@ export default async function RootLayout({
                     <span className="font-bold text-zinc-900 dark:text-white">DevParadise</span>
                   </div>
                   <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-xs">
-                    AI-powered developer problem discovery platform. Find validated pain points, build what matters.
+                    AI-powered developer problem discovery platform. Find validated problems, build what matters.
                   </p>
                 </div>
                 <div>
@@ -96,7 +93,7 @@ export default async function RootLayout({
                     <Link href="/dashboard" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Discover Ideas</Link>
                     <Link href="/trends" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Market Trends</Link>
                     <Link href="/leaderboard" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Leaderboard</Link>
-                    <Link href="/submit" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Submit Pain Point</Link>
+                    <Link href="/submit" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Submit Problem</Link>
                   </div>
                 </div>
                 <div>

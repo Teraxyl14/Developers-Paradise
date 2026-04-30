@@ -10,10 +10,12 @@ export async function updateProfile(formData: FormData) {
   const bio = formData.get("bio") as string;
   const githubUrl = formData.get("githubUrl") as string;
   const twitterUrl = formData.get("twitterUrl") as string;
+  const websiteUrl = formData.get("websiteUrl") as string;
+  const linkedinUrl = formData.get("linkedinUrl") as string;
 
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { bio, githubUrl, twitterUrl }
+    data: { bio, githubUrl, twitterUrl, websiteUrl, linkedinUrl }
   });
 
   revalidatePath('/profile');

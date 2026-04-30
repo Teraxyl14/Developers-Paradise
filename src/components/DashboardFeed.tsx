@@ -3,11 +3,12 @@ import { useState, useTransition } from "react"
 import { IdeaCard } from "./IdeaCard"
 import { useRouter } from "next/navigation"
 import { getIdeas } from "@/actions/ideas"
-import { Clock, TrendingUp, Filter, Loader2, Lightbulb } from "lucide-react"
+import { Clock, TrendingUp, Filter, Loader2, Lightbulb, X, ChevronDown } from "lucide-react"
 import { motion } from "framer-motion"
 
 export function DashboardFeed({ initialIdeas, currentSort, currentQuery }: { initialIdeas: any[], currentSort: string, currentQuery: string }) {
-  const [filter, setFilter] = useState("All");
+  const [difficultyFilter, setDifficultyFilter] = useState("All");
+  const [domainFilter, setDomainFilter] = useState("All");
   const [ideas, setIdeas] = useState(initialIdeas);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(initialIdeas.length === 10);
@@ -15,9 +16,29 @@ export function DashboardFeed({ initialIdeas, currentSort, currentQuery }: { ini
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const router = useRouter();
   
-  const filtered = filter === "All" 
-    ? ideas 
-    : ideas.filter(i => i.difficulty === filter);
+  // Derive unique domains from loaded ideas
+  const allDomains = Array.from(new Set(ideas.map(i => i.domain).filter(Boolean))).sort();
+
+  const filtered = ideas.filter(i => {
+    if (difficultyFilter !== "All" && i.difficulty !== difficultyFilter) return false;
+    if (domainFilter !== "All" && i.domain !== domainFilter) return false;
+    return true;
+  });
+
+  // Count ideas per difficulty level
+  const difficultyCounts = {
+    All: ideas.length,
+    Beginner: ideas.filter(i => i.difficulty === "Beginner").length,
+    Intermediate: ideas.filter(i => i.difficulty === "Intermediate").length,
+    Advanced: ideas.filter(i => i.difficulty === "Advanced").length,
+  };
+
+  const hasActiveFilters = difficultyFilter !== "All" || domainFilter !== "All";
+
+  const clearFilters = () => {
+    setDifficultyFilter("All");
+    setDomainFilter("All");
+  };
 
   const loadMore = () => {
     setIsLoadingMore(true);
@@ -47,41 +68,91 @@ export function DashboardFeed({ initialIdeas, currentSort, currentQuery }: { ini
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        {/* Difficulty filter */}
-        <div className="flex items-center gap-1 bg-white dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-white/[0.06] rounded-xl p-1 shadow-sm">
-          <Filter className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 ml-2 mr-1" />
-          {["All", "Beginner", "Intermediate", "Advanced"].map(f => (
-            <button 
-              key={f} 
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all relative ${filter === f ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.04]'}`}
-            >
-              {filter === f && (
-                <motion.div layoutId="filter-indicator" className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 rounded-lg -z-10 border border-zinc-200/50 dark:border-white/[0.08] shadow-sm" />
-              )}
-              {f}
-            </button>
-          ))}
+      <div className="flex flex-col gap-3 mb-8">
+        {/* Row 1: Filters */}
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+          {/* Difficulty filter */}
+          <div>
+            <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-400 dark:text-zinc-500 mb-1.5 block ml-1">Difficulty</span>
+            <div className="flex items-center gap-1 bg-white dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-white/[0.06] rounded-xl p-1 shadow-sm">
+              {(["All", "Beginner", "Intermediate", "Advanced"] as const).map(f => (
+                <button 
+                  key={f} 
+                  onClick={() => setDifficultyFilter(f)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all relative ${difficultyFilter === f ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.04]'}`}
+                >
+                  {difficultyFilter === f && (
+                    <motion.div layoutId="filter-indicator" className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 rounded-lg -z-10 border border-zinc-200/50 dark:border-white/[0.08] shadow-sm" />
+                  )}
+                  {f}
+                  <span className="ml-1 text-[10px] text-zinc-400 dark:text-zinc-500">
+                    {difficultyCounts[f]}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Domain filter dropdown */}
+          <div>
+            <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-400 dark:text-zinc-500 mb-1.5 block ml-1">Domain</span>
+            <div className="relative">
+              <select
+                value={domainFilter}
+                onChange={(e) => setDomainFilter(e.target.value)}
+                className="appearance-none bg-white dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-white/[0.06] rounded-xl pl-3 pr-8 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-300 shadow-sm cursor-pointer focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+              >
+                <option value="All">All Domains</option>
+                {allDomains.map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Clear filters */}
+          {hasActiveFilters && (
+            <div className="self-end sm:self-auto sm:mt-5">
+              <button 
+                onClick={clearFilters}
+                className="flex items-center gap-1 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/5"
+              >
+                <X className="w-3 h-3" />
+                Clear filters
+              </button>
+            </div>
+          )}
+
+          {/* Sort buttons (pushed right) */}
+          <div className="sm:ml-auto">
+            <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-400 dark:text-zinc-500 mb-1.5 block ml-1">Sort by</span>
+            <div className="flex bg-white dark:bg-zinc-900/50 rounded-xl p-1 border border-zinc-200/80 dark:border-white/[0.06] shadow-sm">
+              {sortButtons.map(({ key, label, icon: Icon, activeColor }) => (
+                <button 
+                  key={key}
+                  onClick={() => handleSort(key)}
+                  className={`px-4 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 relative ${currentSort === key ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-transparent'}`}
+                >
+                  {currentSort === key && <motion.div layoutId="sort-indicator" className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 rounded-lg -z-10 border border-zinc-200/50 dark:border-white/[0.08] shadow-sm" />}
+                  <Icon className={`w-3.5 h-3.5 ${currentSort === key ? activeColor : ''}`} />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Sort buttons */}
-        <div className="flex bg-white dark:bg-zinc-900/50 rounded-xl p-1 border border-zinc-200/80 dark:border-white/[0.06] shadow-sm">
-          {sortButtons.map(({ key, label, icon: Icon, activeColor }) => (
-            <button 
-              key={key}
-              onClick={() => handleSort(key)}
-              className={`px-4 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 relative ${currentSort === key ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-transparent'}`}
-            >
-              {currentSort === key && <motion.div layoutId="sort-indicator" className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 rounded-lg -z-10 border border-zinc-200/50 dark:border-white/[0.08] shadow-sm" />}
-              <Icon className={`w-3.5 h-3.5 ${currentSort === key ? activeColor : ''}`} />
-              {label}
-            </button>
-          ))}
-        </div>
+        {/* Active filter summary */}
+        {hasActiveFilters && (
+          <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+            <Filter className="w-3 h-3" />
+            Showing <strong className="text-zinc-700 dark:text-zinc-200">{filtered.length}</strong> of {ideas.length} ideas
+          </div>
+        )}
       </div>
 
-      <div className="space-y-4 relative">
+      <div className="space-y-6 relative">
         {(isPending || isSorting) && !isLoadingMore && (
            <div className="absolute inset-0 z-10 bg-white/50 dark:bg-[#050507]/50 backdrop-blur-[2px] rounded-xl flex items-center justify-center">
              <div className="flex flex-col items-center gap-2">
@@ -110,7 +181,7 @@ export function DashboardFeed({ initialIdeas, currentSort, currentQuery }: { ini
         )}
       </div>
 
-      {hasMore && filter === "All" && (
+      {hasMore && !hasActiveFilters && (
         <div className="mt-10 text-center">
           <button 
             onClick={loadMore}

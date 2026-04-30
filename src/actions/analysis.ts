@@ -32,7 +32,7 @@ You MUST return a raw JSON object (and absolutely nothing else, no markdown fenc
     {
       "name": "String (Name of the competitor)",
       "url": "String (Website URL or 'Unknown')",
-      "shortcoming": "String (A brief explanation of why this competitor falls short of fully solving this specific developer pain point)"
+      "shortcoming": "String (A brief explanation of why this competitor falls short of fully solving this specific developer problem)"
     }
   ],
   "wedgeStrategy": [

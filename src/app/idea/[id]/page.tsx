@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!idea) return { title: "Idea Not Found" };
 
   return {
-    title: `${idea.title} | Dev Pain Points`,
+    title: `${idea.title} | DevParadise`,
     description: idea.description,
     openGraph: {
       title: idea.title,

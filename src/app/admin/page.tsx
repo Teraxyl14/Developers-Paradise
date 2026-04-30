@@ -1,13 +1,25 @@
 import { auth } from "@/auth"
 import prisma from "@/lib/prisma"
-import { redirect } from "next/navigation"
 import { Shield, Users, Database, Star } from "lucide-react"
 import { AdminControls } from "./AdminControls"
 
 export default async function AdminPage() {
   const session = await auth();
-  if (session?.user?.email !== process.env.ADMIN_EMAIL) {
-    redirect('/');
+  const allowedEmails = ['maruttewari12@gmail.com', 'myraanand06@gmail.com'];
+
+  if (!session?.user?.email || !allowedEmails.includes(session.user.email)) {
+    return (
+      <main className="max-w-md mx-auto py-32 px-4 text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 mb-6">
+          <Shield className="w-8 h-8 text-red-500" />
+        </div>
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Access Denied</h1>
+        <p className="text-zinc-500 dark:text-zinc-400 mb-6">You don&apos;t have administrator privileges to view this page.</p>
+        <a href="/dashboard" className="inline-flex items-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-semibold py-2.5 px-6 rounded-xl text-sm transition-all hover:opacity-90">
+          Back to Dashboard
+        </a>
+      </main>
+    );
   }
 
   const [totalUsers, totalIdeas, totalRepos, totalUpvotes] = await Promise.all([

@@ -20,7 +20,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ so
               </div>
               <h1 className="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">Discovery Feed</h1>
             </div>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 ml-10">Validated developer pain points, ranked by community demand.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 ml-10">Validated developer problems, ranked by community demand.</p>
           </div>
           <SearchBar />
         </div>

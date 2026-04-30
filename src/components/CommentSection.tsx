@@ -1,13 +1,18 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { addComment, getComments } from "@/actions/comments"
 
-export function CommentSection({ ideaId, initialCount }: { ideaId: string, initialCount: number }) {
+export function CommentSection({ ideaId, initialCount, forceOpen = false }: { ideaId: string, initialCount: number, forceOpen?: boolean }) {
   const [comments, setComments] = useState<any[]>([]);
   const [content, setContent] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(forceOpen);
   const [loading, setLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (forceOpen && !isOpen) setIsOpen(true);
+  }, [forceOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -15,6 +20,10 @@ export function CommentSection({ ideaId, initialCount }: { ideaId: string, initi
       getComments(ideaId).then((data) => {
          setComments(data);
          setIsFetching(false);
+         // Auto-focus the input when opened via Discuss button
+         if (forceOpen) {
+           setTimeout(() => inputRef.current?.focus(), 100);
+         }
       });
     }
   }, [isOpen, ideaId]);
@@ -43,6 +52,7 @@ export function CommentSection({ ideaId, initialCount }: { ideaId: string, initi
         <div className="space-y-4">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <input 
+              ref={inputRef}
               type="text"
               value={content}
               onChange={(e) => setContent(e.target.value)}

@@ -72,7 +72,7 @@ export function LeaderboardView({ rankedUsers }: { rankedUsers: RankedUser[] }) 
           <Trophy className="w-7 h-7 text-white" />
         </div>
         <h1 className="text-4xl font-bold text-zinc-900 dark:text-white tracking-tight mb-3">Top Developers</h1>
-        <p className="text-zinc-500 dark:text-zinc-400">The most impactful builders actively solving developer pain points.</p>
+        <p className="text-zinc-500 dark:text-zinc-400">The most impactful builders actively solving real developer problems.</p>
       </motion.div>
 
       {/* Podium */}
