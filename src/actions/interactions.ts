@@ -27,6 +27,13 @@ export async function linkRepository(ideaId: string, url: string, openToCoFounde
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
+  // Validate URL
+  const trimmedUrl = url.trim();
+  if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
+    throw new Error("Invalid URL. Must start with http:// or https://");
+  }
+  try { new URL(trimmedUrl); } catch { throw new Error("Invalid URL format."); }
+
   const repo = await prisma.repository.create({
     data: { userId: session.user.id, ideaId, url, openToCoFounders }
   });

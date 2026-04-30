@@ -10,7 +10,7 @@ export function UserMenu({ session }: { session: any }) {
   if (!session?.user) {
     return (
       <Link 
-        href="/api/auth/signin"
+        href="/api/auth/signin?callbackUrl=/dashboard"
         className="hidden md:flex items-center gap-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/[0.04] transition-all ml-1"
       >
         Sign In
@@ -49,7 +49,7 @@ export function UserMenu({ session }: { session: any }) {
               <User className="w-4 h-4 text-zinc-400" /> Profile
             </Link>
             <button 
-              onClick={() => { setIsOpen(false); signOut(); }}
+              onClick={() => { setIsOpen(false); signOut({ callbackUrl: '/' }); }}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
             >
               <LogOut className="w-4 h-4" /> Sign Out

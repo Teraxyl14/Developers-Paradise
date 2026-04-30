@@ -35,7 +35,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
-  const isAdmin = session?.user?.email === process.env.ADMIN_EMAIL;
+  const ADMIN_EMAILS = ['maruttewari12@gmail.com', 'myraanand06@gmail.com'];
+  const isAdmin = session?.user?.email ? ADMIN_EMAILS.includes(session.user.email) : false;
 
   return (
     <html lang="en" suppressHydrationWarning>

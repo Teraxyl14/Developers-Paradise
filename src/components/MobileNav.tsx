@@ -47,7 +47,7 @@ export function MobileNav({ isAdmin, isLoggedIn }: { isAdmin: boolean, isLoggedI
             ))}
             {!isLoggedIn && (
               <Link
-                href="/api/auth/signin"
+                href="/api/auth/signin?callbackUrl=/dashboard"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all"
               >

@@ -1,28 +1,19 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+import { auth } from "@/auth";
+
+const ADMIN_EMAILS = ['maruttewari12@gmail.com', 'myraanand06@gmail.com'];
 
 export async function GET() {
-  const email = "test@example.com";
-  const password = "password123";
-  
-  try {
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return NextResponse.json({ message: "Test user already exists. Go back to login.", email, password });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await prisma.user.create({
-      data: {
-        name: "Test Developer",
-        email: email,
-        password: hashedPassword,
-      }
-    });
-
-    return NextResponse.json({ message: "Success! Test user created. You can now log in.", email, password });
-  } catch (error: any) {
-    return NextResponse.json({ error: "Failed to create user", details: error.message }, { status: 500 });
+  // Only allow admins to seed test data
+  const session = await auth();
+  if (!session?.user?.email || !ADMIN_EMAILS.includes(session.user.email)) {
+    return new NextResponse("Unauthorized", { status: 401 });
   }
+
+  // Seed route is disabled in production for security
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: "Seed route is disabled in production." }, { status: 403 });
+  }
+
+  return NextResponse.json({ message: "Seed route is restricted. Use the admin dashboard." });
 }

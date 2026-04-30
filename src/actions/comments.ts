@@ -8,6 +8,7 @@ export async function addComment(ideaId: string, content: string) {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   if (!content.trim()) throw new Error("Content cannot be empty");
+  if (content.length > 2000) throw new Error("Comment is too long (max 2000 characters)");
 
   await prisma.comment.create({
     data: {
