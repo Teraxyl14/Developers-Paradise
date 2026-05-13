@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 /** 
  * >>> ADJUSTABLE GLOBE PARAMETERS ARE BELOW IN GLOBE_CONFIG <<<
  */
@@ -258,18 +258,21 @@ const nodeFrag = /* glsl */ `
 `
 
 function resolveScrollTargets(s: number): { z: number; y: number; tilt: number } {
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768
+  const o = isMobile ? 0.6 : 0
+
   if (s < 0.25) {
     const t = s / 0.25
-    return { z: lerp(4.4, 3.2, t), y: lerp(0, -0.2, t), tilt: lerp(0, 0.1, t) }
+    return { z: lerp(4.4, 3.2, t), y: lerp(0 + o, -0.2 + o, t), tilt: lerp(0, 0.1, t) }
   } else if (s < 0.55) {
     const t = (s - 0.25) / 0.3
-    return { z: lerp(3.2, 2.4, t), y: lerp(-0.2, -0.5, t), tilt: lerp(0.1, 0.45, t) }
+    return { z: lerp(3.2, 2.4, t), y: lerp(-0.2 + o, -0.5 + o, t), tilt: lerp(0.1, 0.45, t) }
   } else if (s < 0.8) {
     const t = (s - 0.55) / 0.25
-    return { z: lerp(2.4, 1.85, t), y: lerp(-0.5, -0.7, t), tilt: lerp(0.45, 0.65, t) }
+    return { z: lerp(2.4, 1.85, t), y: lerp(-0.5 + o, -0.7 + o, t), tilt: lerp(0.45, 0.65, t) }
   } else {
     const t = (s - 0.8) / 0.2
-    return { z: lerp(1.85, 1.5, t), y: lerp(-0.7, -0.85, t), tilt: lerp(0.65, 0.85, t) }
+    return { z: lerp(1.85, 1.5, t), y: lerp(-0.7 + o, -0.85 + o, t), tilt: lerp(0.65, 0.85, t) }
   }
 }
 

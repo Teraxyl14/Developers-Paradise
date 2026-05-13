@@ -59,7 +59,7 @@ export default function LandingPage() {
       </div>
 
       {/* ═══ LAYER 2: BACKGROUND RISER TEXT ═══ */}
-      <div className="fixed inset-0 z-0 flex items-start justify-center pointer-events-none overflow-hidden pt-6 sm:pt-8">
+      <div className="fixed inset-0 z-0 flex items-start justify-center pointer-events-none overflow-hidden pt-[18vh] sm:pt-8">
         <motion.h1 
           style={{ y: riserY, opacity: riserOpacity, fontFamily: "var(--font-bebas)" }}
           className="text-[12vw] sm:text-[14vw] font-normal leading-none text-text-primary whitespace-nowrap tracking-tight select-none drop-shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
@@ -117,11 +117,11 @@ export default function LandingPage() {
             The ultimate platform to discover, build, and ship solutions for real developer problems. Stop guessing—solve what the market actually needs right now.
           </motion.p>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 1.1 }} className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="#login" className="group inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:scale-[0.98] active:scale-95 shadow-lg shadow-accent/20 text-sm">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 1.1 }} className="flex flex-col sm:flex-row gap-4 justify-center w-full px-4 sm:px-0">
+            <Link href="#login" className="group inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:scale-[0.98] active:scale-95 shadow-lg shadow-accent/20 text-sm w-full sm:w-auto">
               Get Started Free <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 border border-border-default hover:bg-bg-surface text-text-secondary hover:text-text-primary font-semibold py-3.5 px-8 rounded-2xl transition-all text-sm">
+            <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 border border-border-default hover:bg-bg-surface text-text-secondary hover:text-text-primary font-semibold py-3.5 px-8 rounded-2xl transition-all text-sm w-full sm:w-auto">
               Browse Problems
             </Link>
           </motion.div>
