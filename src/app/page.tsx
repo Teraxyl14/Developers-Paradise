@@ -100,7 +100,7 @@ export default function LandingPage() {
             <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="p-2 rounded-lg hover:bg-bg-surface transition-colors text-text-muted hover:text-text-primary">
               {mounted ? (theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />) : <div className="w-4 h-4" />}
             </button>
-            <Link href="#login" className="text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors">Sign In</Link>
+            <a href="#login" className="text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors">Sign In</a>
             <Link href="/dashboard" className="text-sm font-semibold px-4 py-2 rounded-xl bg-accent text-white hover:bg-accent-hover transition-colors">Explore</Link>
           </div>
         </div>
@@ -118,9 +118,9 @@ export default function LandingPage() {
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 1.1 }} className="flex flex-col sm:flex-row gap-4 justify-center w-full px-4 sm:px-0">
-            <Link href="#login" className="group inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:scale-[0.98] active:scale-95 shadow-lg shadow-accent/20 text-sm w-full sm:w-auto">
+            <a href="#login" className="group inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:scale-[0.98] active:scale-95 shadow-lg shadow-accent/20 text-sm w-full sm:w-auto">
               Get Started Free <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </a>
             <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 border border-border-default hover:bg-bg-surface text-text-secondary hover:text-text-primary font-semibold py-3.5 px-8 rounded-2xl transition-all text-sm w-full sm:w-auto">
               Browse Problems
             </Link>
@@ -208,9 +208,9 @@ export default function LandingPage() {
             <p className="text-text-muted text-base mb-10 max-w-sm mx-auto leading-relaxed">
               Stop building tutorials. Start solving real problems that real companies actually need.
             </p>
-            <Link href="#login" className="group inline-flex items-center justify-center gap-2.5 w-full bg-accent hover:bg-accent-hover text-white font-bold py-4 px-8 rounded-2xl transition-all hover:scale-[0.98] active:scale-95 shadow-lg shadow-accent/20 text-base">
+            <a href="#login" className="group inline-flex items-center justify-center gap-2.5 w-full bg-accent hover:bg-accent-hover text-white font-bold py-4 px-8 rounded-2xl transition-all hover:scale-[0.98] active:scale-95 shadow-lg shadow-accent/20 text-base">
               Create Account & View Feed <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </a>
             <Link href="/dashboard" className="mt-4 inline-flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border border-border-default hover:bg-bg-surface text-text-muted hover:text-text-primary font-semibold text-sm transition-all">
               Browse First
             </Link>

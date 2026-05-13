@@ -10,12 +10,12 @@ export function UserMenu({ session }: { session: any }) {
 
   if (!session?.user) {
     return (
-      <Link 
+      <a 
         href="#login"
         className="hidden md:flex items-center gap-1.5 text-sm font-medium text-text-muted hover:text-text-primary px-3 py-1.5 rounded-lg hover:bg-bg-surface transition-all ml-1"
       >
         Sign In
-      </Link>
+      </a>
     )
   }
 
