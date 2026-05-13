@@ -225,6 +225,7 @@ export default function LandingPage() {
         <footer className="border-t border-border-default py-8 text-center text-xs text-text-muted bg-bg-primary">
           <p>&copy; {new Date().getFullYear()} Developers Paradise · Built with Next.js + Gemini AI</p>
         </footer>
+        </div>
       </div>
     </div>
   )
