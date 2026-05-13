@@ -98,7 +98,7 @@ export function MobileNav({ isAdmin, isLoggedIn }: { isAdmin: boolean, isLoggedI
               {!isLoggedIn && (
                 <motion.div variants={itemVariants}>
                   <button
-                    onClick={() => signIn('google')}
+                    onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
                     className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-bold text-white bg-accent hover:bg-accent-hover transition-all mt-2"
                   >
                     <LogIn className="w-5 h-5" />
