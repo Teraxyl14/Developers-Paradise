@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { signOut } from "next-auth/react"
+import { signOut, signIn } from "next-auth/react"
 import Link from "next/link"
 import { LogOut, User } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -10,12 +10,12 @@ export function UserMenu({ session }: { session: any }) {
 
   if (!session?.user) {
     return (
-      <a 
-        href="#login"
+      <button 
+        onClick={() => signIn('google')}
         className="hidden md:flex items-center gap-1.5 text-sm font-medium text-text-muted hover:text-text-primary px-3 py-1.5 rounded-lg hover:bg-bg-surface transition-all ml-1"
       >
         Sign In
-      </a>
+      </button>
     )
   }
 

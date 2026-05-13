@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Menu, X, Compass, BarChart3, Trophy, PlusCircle, User, Shield, LogIn } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
+import { signIn } from "next-auth/react"
 
 export function MobileNav({ isAdmin, isLoggedIn }: { isAdmin: boolean, isLoggedIn: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -96,13 +97,13 @@ export function MobileNav({ isAdmin, isLoggedIn }: { isAdmin: boolean, isLoggedI
               ))}
               {!isLoggedIn && (
                 <motion.div variants={itemVariants}>
-                  <a
-                    href="#login"
-                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold text-white bg-accent hover:bg-accent-hover transition-all mt-2"
+                  <button
+                    onClick={() => signIn('google')}
+                    className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-bold text-white bg-accent hover:bg-accent-hover transition-all mt-2"
                   >
                     <LogIn className="w-5 h-5" />
                     Sign In
-                  </a>
+                  </button>
                 </motion.div>
               )}
             </motion.div>

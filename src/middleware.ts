@@ -9,7 +9,7 @@ export default auth((req) => {
   const isProtectedRoute = pathname.startsWith('/profile') || pathname.startsWith('/submit') || pathname.startsWith('/inbox');
 
   if (isProtectedRoute && !isLoggedIn) {
-    const signInUrl = new URL('/#login', req.nextUrl);
+    const signInUrl = new URL('/api/auth/signin', req.nextUrl);
     signInUrl.searchParams.set('callbackUrl', pathname);
     return Response.redirect(signInUrl);
   }
