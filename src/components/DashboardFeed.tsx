@@ -3,18 +3,21 @@ import { useState, useTransition } from "react"
 import { IdeaCard } from "./IdeaCard"
 import { useRouter } from "next/navigation"
 import { getIdeas } from "@/actions/ideas"
-import { Clock, TrendingUp, Filter, Loader2, Lightbulb, X, ChevronDown } from "lucide-react"
-import { motion } from "framer-motion"
+import { ChevronLeft, ChevronRight, Clock, TrendingUp, Filter, Loader2, Lightbulb, X, ChevronDown } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
-export function DashboardFeed({ initialIdeas, currentSort, currentQuery }: { initialIdeas: any[], currentSort: string, currentQuery: string }) {
+import { useSearchParams } from "next/navigation"
+import { ExpandedIdeaModal } from "./ExpandedIdeaModal"
+
+export function DashboardFeed({ initialIdeas, currentSort, currentQuery, initialPage, totalPages }: { initialIdeas: any[], currentSort: string, currentQuery: string, initialPage: number, totalPages: number }) {
   const [difficultyFilter, setDifficultyFilter] = useState("All");
   const [domainFilter, setDomainFilter] = useState("All");
-  const [ideas, setIdeas] = useState(initialIdeas);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(initialIdeas.length === 10);
   const [isPending, startTransition] = useTransition();
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeIdeaId = searchParams.get('ideaId');
+  
+  const ideas = initialIdeas;
   
   // Derive unique domains from loaded ideas
   const allDomains = Array.from(new Set(ideas.map(i => i.domain).filter(Boolean))).sort();
@@ -40,23 +43,15 @@ export function DashboardFeed({ initialIdeas, currentSort, currentQuery }: { ini
     setDomainFilter("All");
   };
 
-  const loadMore = () => {
-    setIsLoadingMore(true);
-    startTransition(async () => {
-      const nextPage = page + 1;
-      const newIdeas = await getIdeas(currentSort as any, currentQuery, nextPage);
-      if (newIdeas.length < 10) setHasMore(false);
-      setIdeas([...ideas, ...newIdeas]);
-      setPage(nextPage);
-      setIsLoadingMore(false);
+  const handleSort = (sortType: string) => {
+    startTransition(() => {
+      router.push(`/dashboard?sort=${sortType}${currentQuery ? `&q=${currentQuery}` : ''}&page=1`);
     });
   };
 
-  const [isSorting, startSorting] = useTransition();
-
-  const handleSort = (sortType: string) => {
-    startSorting(() => {
-      router.push(`/dashboard?sort=${sortType}${currentQuery ? `&q=${currentQuery}` : ''}`);
+  const goToPage = (newPage: number) => {
+    startTransition(() => {
+      router.push(`/dashboard?sort=${currentSort}${currentQuery ? `&q=${currentQuery}` : ''}&page=${newPage}`);
     });
   };
 
@@ -66,6 +61,19 @@ export function DashboardFeed({ initialIdeas, currentSort, currentQuery }: { ini
     { key: 'contrarian', label: 'Contrarian', icon: Lightbulb, activeColor: 'text-purple-500' },
   ]
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 200, damping: 20 } }
+  };
+
   return (
     <div>
       <div className="flex flex-col gap-3 mb-8">
@@ -73,19 +81,19 @@ export function DashboardFeed({ initialIdeas, currentSort, currentQuery }: { ini
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
           {/* Difficulty filter */}
           <div>
-            <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-400 dark:text-zinc-500 mb-1.5 block ml-1">Difficulty</span>
-            <div className="flex items-center gap-1 bg-white dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-white/[0.06] rounded-xl p-1 shadow-sm">
+            <span className="text-[10px] uppercase tracking-wider font-semibold text-text-muted mb-1.5 block ml-1">Difficulty</span>
+            <div className="flex items-center gap-1 liquid-glass rounded-xl p-1">
               {(["All", "Beginner", "Intermediate", "Advanced"] as const).map(f => (
                 <button 
                   key={f} 
                   onClick={() => setDifficultyFilter(f)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all relative ${difficultyFilter === f ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.04]'}`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all relative ${difficultyFilter === f ? 'text-text-primary' : 'text-text-muted hover:text-text-primary hover:bg-bg-surface'}`}
                 >
                   {difficultyFilter === f && (
-                    <motion.div layoutId="filter-indicator" className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 rounded-lg -z-10 border border-zinc-200/50 dark:border-white/[0.08] shadow-sm" />
+                    <motion.div layoutId="filter-indicator" className="absolute inset-0 bg-bg-surface-hover rounded-lg -z-10 border border-border-default" style={{ backgroundColor: 'var(--bg-surface-hover)' }} />
                   )}
                   {f}
-                  <span className="ml-1 text-[10px] text-zinc-400 dark:text-zinc-500">
+                  <span className="ml-1 text-[10px] text-text-faint">
                     {difficultyCounts[f]}
                   </span>
                 </button>
@@ -93,21 +101,14 @@ export function DashboardFeed({ initialIdeas, currentSort, currentQuery }: { ini
             </div>
           </div>
 
-          {/* Domain filter dropdown */}
+          {/* Domain filter */}
           <div>
-            <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-400 dark:text-zinc-500 mb-1.5 block ml-1">Domain</span>
-            <div className="relative">
-              <select
-                value={domainFilter}
-                onChange={(e) => setDomainFilter(e.target.value)}
-                className="appearance-none bg-white dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-white/[0.06] rounded-xl pl-3 pr-8 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-300 shadow-sm cursor-pointer focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-              >
-                <option value="All">All Domains</option>
-                {allDomains.map(d => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400 pointer-events-none" />
+            <span className="text-[10px] uppercase tracking-wider font-semibold text-text-muted mb-1.5 block ml-1">Domain</span>
+            <div className="flex flex-wrap gap-1">
+              <button onClick={() => setDomainFilter("All")} className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${domainFilter === "All" ? "liquid-glass text-text-primary" : "text-text-muted hover:text-text-primary hover:bg-bg-surface"}`}>All</button>
+              {allDomains.map(d => (
+                <button key={d} onClick={() => setDomainFilter(d)} className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${domainFilter === d ? "liquid-glass text-accent-text" : "text-text-muted hover:text-text-primary hover:bg-bg-surface"}`}>{d}</button>
+              ))}
             </div>
           </div>
 
@@ -116,25 +117,25 @@ export function DashboardFeed({ initialIdeas, currentSort, currentQuery }: { ini
             <div className="self-end sm:self-auto sm:mt-5">
               <button 
                 onClick={clearFilters}
-                className="flex items-center gap-1 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/5"
+                className="flex items-center gap-1 text-xs font-medium text-text-muted hover:text-text-primary transition-colors px-2 py-1.5 rounded-lg hover:bg-bg-surface"
               >
                 <X className="w-3 h-3" />
-                Clear filters
+                Clear
               </button>
             </div>
           )}
 
           {/* Sort buttons (pushed right) */}
           <div className="sm:ml-auto">
-            <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-400 dark:text-zinc-500 mb-1.5 block ml-1">Sort by</span>
-            <div className="flex bg-white dark:bg-zinc-900/50 rounded-xl p-1 border border-zinc-200/80 dark:border-white/[0.06] shadow-sm">
+            <span className="text-[10px] uppercase tracking-wider font-semibold text-text-muted mb-1.5 block ml-1">Sort</span>
+            <div className="flex liquid-glass rounded-xl p-1">
               {sortButtons.map(({ key, label, icon: Icon, activeColor }) => (
                 <button 
                   key={key}
                   onClick={() => handleSort(key)}
-                  className={`px-4 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 relative ${currentSort === key ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-transparent'}`}
+                  className={`px-4 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 relative ${currentSort === key ? 'text-text-primary' : 'text-text-muted hover:text-text-primary'}`}
                 >
-                  {currentSort === key && <motion.div layoutId="sort-indicator" className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 rounded-lg -z-10 border border-zinc-200/50 dark:border-white/[0.08] shadow-sm" />}
+                  {currentSort === key && <motion.div layoutId="sort-indicator" className="absolute inset-0 bg-bg-surface-hover rounded-lg -z-10 border border-border-default" style={{ backgroundColor: 'var(--bg-surface-hover)' }} />}
                   <Icon className={`w-3.5 h-3.5 ${currentSort === key ? activeColor : ''}`} />
                   {label}
                 </button>
@@ -145,51 +146,69 @@ export function DashboardFeed({ initialIdeas, currentSort, currentQuery }: { ini
 
         {/* Active filter summary */}
         {hasActiveFilters && (
-          <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+          <div className="text-xs text-text-muted flex items-center gap-1.5">
             <Filter className="w-3 h-3" />
-            Showing <strong className="text-zinc-700 dark:text-zinc-200">{filtered.length}</strong> of {ideas.length} ideas
+            Showing <strong className="text-text-primary">{filtered.length}</strong> of {ideas.length} ideas
           </div>
         )}
       </div>
 
-      <div className="space-y-6 relative">
-        {(isPending || isSorting) && !isLoadingMore && (
-           <div className="absolute inset-0 z-10 bg-white/50 dark:bg-[#050507]/50 backdrop-blur-[2px] rounded-xl flex items-center justify-center">
-             <div className="flex flex-col items-center gap-2">
-               <div className="w-6 h-6 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-             </div>
+      <motion.div 
+        className="flex flex-col gap-3 relative"
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
+        {isPending && (
+           <div className="absolute inset-0 z-10 bg-bg-primary/50 backdrop-blur-[2px] rounded-xl flex items-center justify-center">
+             <div className="w-6 h-6 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
            </div>
         )}
         
-        {filtered.map((idea, index) => (
+        {filtered.map((idea) => (
           <motion.div 
             key={idea.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.04 }}
+            variants={itemVariants}
           >
              <IdeaCard idea={idea} />
           </motion.div>
         ))}
         
         {filtered.length === 0 && !isPending && (
-           <div className="flex flex-col items-center justify-center py-24 text-zinc-500 border border-dashed border-zinc-300 dark:border-zinc-800 rounded-2xl bg-zinc-50/50 dark:bg-zinc-900/20">
+           <div className="flex flex-col items-center justify-center py-24 text-text-muted border border-dashed border-border-default rounded-2xl bg-bg-surface">
              <Filter className="w-10 h-10 mb-3 opacity-20" />
              <p className="text-sm font-medium">No ideas found matching your criteria.</p>
-             <p className="text-xs text-zinc-400 mt-1">Try adjusting your filters or search query.</p>
+             <p className="text-xs text-text-faint mt-1">Try adjusting your filters or search query.</p>
            </div>
         )}
-      </div>
+      </motion.div>
 
-      {hasMore && !hasActiveFilters && (
-        <div className="mt-10 text-center">
+      <AnimatePresence>
+        {activeIdeaId && (
+          <ExpandedIdeaModal idea={ideas.find(i => i.id === activeIdeaId)} />
+        )}
+      </AnimatePresence>
+
+      {!hasActiveFilters && totalPages > 1 && (
+        <div className="mt-10 flex items-center justify-center gap-4">
           <button 
-            onClick={loadMore}
-            disabled={isPending}
-            className="group bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-white/[0.08] hover:border-zinc-300 dark:hover:border-white/15 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm disabled:opacity-50 flex items-center gap-2 mx-auto hover:-translate-y-0.5"
+            onClick={() => goToPage(initialPage - 1)}
+            disabled={initialPage <= 1 || isPending}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border border-border-default bg-bg-primary text-text-secondary disabled:opacity-50 hover:bg-bg-surface transition-all"
           >
-            {isPending && isLoadingMore ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            {isPending && isLoadingMore ? 'Loading...' : 'Load More Ideas'}
+            <ChevronLeft className="w-4 h-4" /> Prev
+          </button>
+          
+          <div className="text-sm font-medium text-text-muted">
+            Page <span className="text-text-primary">{initialPage}</span> of {totalPages}
+          </div>
+
+          <button 
+            onClick={() => goToPage(initialPage + 1)}
+            disabled={initialPage >= totalPages || isPending}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border border-border-default bg-bg-primary text-text-secondary disabled:opacity-50 hover:bg-bg-surface transition-all"
+          >
+            Next <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       )}

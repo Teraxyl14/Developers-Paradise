@@ -30,9 +30,19 @@ export default async function LeaderboardPage() {
     }
   }).filter(u => u.score > 0).sort((a, b) => b.score - a.score);
 
+  let currentRank = 1;
+  let previousScore = -1;
+  const denseRankedUsers = rankedUsers.map((u, index) => {
+     if (index > 0 && u.score < previousScore) {
+       currentRank++;
+     }
+     previousScore = u.score;
+     return { ...u, denseRank: currentRank };
+  });
+
   return (
     <main className="max-w-5xl mx-auto py-12 px-4 md:px-6">
-      <LeaderboardView rankedUsers={rankedUsers} />
+      <LeaderboardView rankedUsers={denseRankedUsers} />
     </main>
   )
 }

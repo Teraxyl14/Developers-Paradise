@@ -126,7 +126,11 @@ export async function toggleUpvote(ideaId: string) {
   if (existing) {
     await prisma.upvote.delete({ where: { userId_ideaId: { userId: session.user.id, ideaId } } });
   } else {
-    await prisma.upvote.create({ data: { userId: session.user.id, ideaId } });
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    const reputationScore = user?.reputationScore || 0;
+    const weight = 1 + Math.floor(reputationScore / 100);
+
+    await prisma.upvote.create({ data: { userId: session.user.id, ideaId, weight } });
     
     // Notify author of upvote
     const idea = await prisma.idea.findUnique({ where: { id: ideaId }, select: { authorId: true } });
@@ -160,5 +164,27 @@ export async function updateIdeaStatus(ideaId: string, status: 'OPEN' | 'IN_PROG
   });
 
   revalidatePath('/dashboard');
+  revalidatePath('/profile');
+}
+
+export async function repairStreak() {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (!user) throw new Error("User not found");
+
+  if (user.reputationScore < 50) {
+    throw new Error("Insufficient reputation points to repair streak. 50 points required.");
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      reputationScore: { decrement: 50 },
+      lastActiveDate: new Date()
+    }
+  });
+
   revalidatePath('/profile');
 }

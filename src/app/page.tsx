@@ -1,207 +1,228 @@
 "use client"
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowRight, Zap, Search, GitBranch, BarChart3, Lightbulb, Bot, Rocket, ChevronRight } from "lucide-react";
+import { Suspense, useState, useEffect, useRef } from "react"
+import { Canvas } from "@react-three/fiber"
+import { motion, useScroll, useTransform } from "framer-motion"
+import Link from "next/link"
+import { ArrowRight, Search, Bot, Rocket, BarChart3, Code2, Sun, Moon } from "lucide-react"
+import { NetworkEarth, SpaceParticles } from "@/components/EarthScene"
+import { useTheme } from "next-themes"
 
-const stats = [
-  { label: "Problems Discovered", value: "2,400+", icon: Search },
-  { label: "Active Builders", value: "150+", icon: GitBranch },
-  { label: "AI Analyses Run", value: "800+", icon: Bot },
-]
-
+/* ── Feature cards ── */
 const features = [
-  {
-    icon: Search,
-    title: "AI-Powered Discovery",
-    description: "We scrape GitHub discussions, StackOverflow, and developer forums to find validated problems — not hypothetical ideas.",
-    gradient: "from-blue-500 to-cyan-500",
-  },
-  {
-    icon: Bot,
-    title: "Market Intelligence",
-    description: "Gemini AI analyzes competitors, calculates market saturation, and generates wedge strategies for each idea.",
-    gradient: "from-indigo-500 to-purple-500",
-  },
-  {
-    icon: Rocket,
-    title: "Build & Ship",
-    description: "Link your repo, get an AI architecture roast, run Lighthouse audits, and climb the leaderboard as you ship solutions.",
-    gradient: "from-purple-500 to-pink-500",
-  },
+  { icon: Search, title: "AI-Powered Discovery", desc: "We scrape GitHub, StackOverflow, and dev forums to surface validated problems — not hypothetical ideas.", color: "from-blue-500 to-cyan-500" },
+  { icon: Bot, title: "Market Intelligence", desc: "Gemini AI analyzes competitors, scores market saturation, and generates wedge strategies for every idea.", color: "from-indigo-500 to-purple-500" },
+  { icon: Rocket, title: "Build & Ship", desc: "Link your repo, get an AI architecture roast, run Lighthouse audits, and climb the leaderboard.", color: "from-purple-500 to-pink-500" },
 ]
 
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.3 }
-  }
-}
+const sampleCards = [
+  { title: "Real-Time Collaboration Lag", domain: "DevTools", difficulty: "Advanced", viability: "94%", stack: ["WebRTC", "CRDT", "Rust"] },
+  { title: "CI/CD Pipeline Bottlenecks", domain: "Infrastructure", difficulty: "Intermediate", viability: "87%", stack: ["Go", "Docker", "K8s"] },
+  { title: "API Rate-Limit Intelligence", domain: "Backend", difficulty: "Intermediate", viability: "91%", stack: ["Redis", "Node.js", "GraphQL"] },
+]
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } }
-}
-
-export default function Home() {
+/* ── Animated counter ── */
+function Counter({ value, label }: { value: string; label: string }) {
   return (
-    <div className="relative overflow-hidden">
-      {/* ──── HERO ──── */}
-      <section className="relative flex flex-col items-center justify-center min-h-[92vh] px-4 text-center">
-        {/* Decorative elements */}
-        <div className="absolute inset-0 dot-pattern opacity-40 dark:opacity-20 pointer-events-none" />
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-400/10 dark:bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-400/10 dark:bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute top-1/3 right-1/3 w-64 h-64 bg-purple-400/8 dark:bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
+    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
+      <div className="text-3xl md:text-4xl font-black font-display text-text-primary stat-number">{value}</div>
+      <div className="text-xs text-text-muted uppercase tracking-wider font-semibold mt-1">{label}</div>
+    </motion.div>
+  )
+}
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="z-10 flex flex-col items-center max-w-4xl"
+export default function LandingPage() {
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
+  // Track page scroll to drive the 3D camera
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  })
+
+  // Animation values for the background riser text (rising from behind the globe)
+  const riserY = useTransform(scrollYProgress, [0, 0.4], ["0vh", "-15vh"])
+  const riserOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0])
+
+  return (
+    <div ref={containerRef} className="text-text-primary min-h-screen relative">
+      
+      {/* ═══ LAYER 1: BACKGROUND STARS ═══ */}
+      <div className="fixed inset-0 z-[-1] pointer-events-none">
+        <Suspense fallback={null}>
+          <Canvas camera={{ position: [0, 0, 3.8], fov: 45 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}>
+            <SpaceParticles theme={theme as string} />
+          </Canvas>
+        </Suspense>
+      </div>
+
+      {/* ═══ LAYER 2: BACKGROUND RISER TEXT ═══ */}
+      <div className="fixed inset-0 z-0 flex items-start justify-center pointer-events-none overflow-hidden pt-6 sm:pt-8">
+        <motion.h1 
+          style={{ y: riserY, opacity: riserOpacity, fontFamily: "var(--font-bebas)" }}
+          className="text-[12vw] sm:text-[14vw] font-normal leading-none text-white whitespace-nowrap tracking-tight select-none drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
         >
-          {/* Badge */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded-full border border-indigo-200 dark:border-indigo-500/20 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 text-xs font-semibold uppercase tracking-wider"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-            </span>
-            AI-Powered Problem Discovery
-          </motion.div>
+          BUILD WHAT DEVS <span className="text-gradient">NEED</span>
+        </motion.h1>
+      </div>
 
-          {/* Headline */}
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-6 text-zinc-900 dark:text-white leading-[1.1]">
-            Build what devs{" "}
-            <span className="text-gradient">actually need.</span>
-          </h1>
-          
-          {/* Subtitle */}
-          <p className="text-lg sm:text-xl text-zinc-600 dark:text-zinc-400 mb-10 max-w-2xl leading-relaxed">
-            Stop guessing. We scrape, parse, and rank <strong className="text-zinc-900 dark:text-zinc-200">real developer problems</strong> from across the web — so you build tools people will pay for.
-          </p>
-          
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <Link 
-              href="/api/auth/signin?callbackUrl=/dashboard" 
-              className="group relative flex items-center justify-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-semibold py-3 px-8 rounded-xl transition-all hover:bg-zinc-800 dark:hover:bg-zinc-100 shadow-lg shadow-zinc-900/10 dark:shadow-white/10 hover:shadow-xl hover:shadow-zinc-900/20 dark:hover:shadow-white/20 hover:-translate-y-0.5"
-            >
-              Get Started
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link 
-              href="/dashboard" 
-              className="flex items-center justify-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 text-zinc-700 dark:text-zinc-300 font-medium py-3 px-8 rounded-xl transition-all hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:-translate-y-0.5 shadow-sm"
-            >
-              <Search className="w-4 h-4 text-zinc-400" />
-              Browse Ideas
-            </Link>
+      {/* ═══ LAYER 3: 3D GLOBE FOREGROUND ═══ */}
+      <div className="fixed inset-0 z-[1] pointer-events-none">
+        <Suspense fallback={null}>
+          <Canvas camera={{ position: [0, 0, 3.8], fov: 45 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }} style={{ background: "transparent" }}>
+            <ambientLight intensity={theme === "light" ? 0.6 : 0.15} />
+            <pointLight position={[5, 5, 5]} intensity={theme === "light" ? 1.5 : 1} color="#ffffff" />
+            <pointLight position={[-4, -3, -5]} intensity={0.5} color={theme === "light" ? "#a5b4fc" : "#6366f1"} />
+            <NetworkEarth scrollProgress={scrollYProgress} theme={theme as string} />
+          </Canvas>
+        </Suspense>
+      </div>
+
+      {/* ═══ PAGE CONTENT (scrolls over fixed globe) ═══ */}
+      <div className="relative z-10">
+        {/* ═══ HERO ═══ */}
+        <section className="relative h-screen flex flex-col items-center justify-center">
+
+        {/* Gradient overlay - removed top tint to clear the riser text */}
+        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-transparent via-transparent to-bg-primary pointer-events-none" />
+
+        {/* Inline nav */}
+        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-6 py-5 max-w-6xl mx-auto w-full">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-lg overflow-hidden border border-border-default shadow-lg shadow-accent/10 group-hover:scale-105 transition-transform">
+              <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
+            </div>
+            <span className="font-bold font-display text-text-primary text-lg hidden sm:inline">DevParadise</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="p-2 rounded-lg hover:bg-bg-surface transition-colors text-text-muted hover:text-text-primary">
+              {mounted ? (theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />) : <div className="w-4 h-4" />}
+            </button>
+            <Link href="#login" className="text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors">Sign In</Link>
+            <Link href="/dashboard" className="text-sm font-semibold px-4 py-2 rounded-xl bg-accent text-white hover:bg-accent-hover transition-colors">Explore</Link>
           </div>
+        </div>
 
-          {/* Stats */}
-          <motion.div 
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="flex flex-wrap items-center justify-center gap-8 mt-16"
-          >
-            {stats.map((stat) => (
-              <motion.div key={stat.label} variants={item} className="flex flex-col items-center gap-1">
-                <stat.icon className="w-4 h-4 text-zinc-400 dark:text-zinc-500 mb-1" />
-                <span className="text-2xl font-bold stat-number text-zinc-900 dark:text-white">{stat.value}</span>
-                <span className="text-xs text-zinc-500 dark:text-zinc-500 font-medium">{stat.label}</span>
-              </motion.div>
-            ))}
+        {/* Hero text */}
+        <div className="relative z-10 text-center max-w-3xl px-6 mt-8">
+
+
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.4 }} className="text-5xl sm:text-7xl md:text-8xl font-black font-display leading-[0.92] tracking-tight mb-6 drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)]">
+            Developers <span className="text-gradient">Paradise</span>
+          </motion.h1>
+
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.8 }} className="text-lg md:text-xl text-white max-w-2xl mx-auto leading-relaxed mb-10 drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
+            The ultimate platform to discover, build, and ship solutions for real developer problems. Stop guessing—solve what the market actually needs right now.
+          </motion.p>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 1.1 }} className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="#login" className="group inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:scale-[0.98] active:scale-95 shadow-lg shadow-accent/20 text-sm">
+              Get Started Free <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 border border-border-default hover:bg-bg-surface text-text-secondary hover:text-text-primary font-semibold py-3.5 px-8 rounded-2xl transition-all text-sm">
+              Browse Problems
+            </Link>
           </motion.div>
-        </motion.div>
+        </div>
+
+
 
         {/* Scroll indicator */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 1 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-zinc-400 dark:text-zinc-600"
-        >
-          <span className="text-[10px] uppercase tracking-[0.2em] font-medium">Scroll</span>
-          <div className="w-5 h-8 rounded-full border-2 border-zinc-300 dark:border-zinc-700 flex items-start justify-center p-1">
-            <motion.div 
-              animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-              className="w-1 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-600"
-            />
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5 }} className="absolute bottom-20 z-10">
+          <div className="w-5 h-8 rounded-full border border-border-default flex items-start justify-center p-1.5">
+            <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }} className="w-1 h-1 rounded-full bg-text-muted" />
           </div>
         </motion.div>
       </section>
 
-      {/* ──── FEATURES ──── */}
-      <section className="relative max-w-6xl mx-auto px-4 md:px-6 py-24">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-4">
-            <Zap className="w-3.5 h-3.5" /> How it works
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white tracking-tight mb-4">
-            From problem to shipped product
-          </h2>
-          <p className="text-zinc-500 dark:text-zinc-400 max-w-lg mx-auto">Three steps to find your next project that people actually want to use.</p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {features.map((feature, i) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ delay: i * 0.15, duration: 0.5 }}
-              className="group relative bg-white dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-white/[0.06] rounded-2xl p-6 hover:border-zinc-300 dark:hover:border-white/10 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-zinc-900/5 dark:hover:shadow-none"
-            >
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform`}>
-                <feature.icon className="w-5 h-5 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">{feature.title}</h3>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{feature.description}</p>
-              <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                Learn more <ChevronRight className="w-3 h-3" />
-              </div>
-            </motion.div>
-          ))}
+      {/* ═══ STATS ═══ */}
+      <section className="border-y border-border-default bg-bg-secondary/50 backdrop-blur-sm py-14">
+        <div className="max-w-4xl mx-auto px-6 grid grid-cols-3 gap-8">
+          <Counter value="2,400+" label="Problems Discovered" />
+          <Counter value="150+" label="Active Builders" />
+          <Counter value="800+" label="AI Analyses Run" />
         </div>
       </section>
 
-      {/* ──── CTA BANNER ──── */}
-      <section className="max-w-6xl mx-auto px-4 md:px-6 pb-24">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.98 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="relative overflow-hidden rounded-2xl bg-zinc-900 dark:bg-zinc-900/80 p-10 md:p-14 text-center border border-zinc-800 dark:border-white/[0.06]"
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-600/20 via-transparent to-transparent pointer-events-none" />
-          <div className="relative z-10">
-            <Lightbulb className="w-8 h-8 text-yellow-400 mx-auto mb-4" />
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 tracking-tight">Ready to build something that matters?</h2>
-            <p className="text-zinc-400 mb-8 max-w-lg mx-auto">Join developers who skip the guesswork and build validated solutions to real problems.</p>
-            <Link 
-              href="/dashboard"
-              className="inline-flex items-center gap-2 bg-white text-zinc-900 font-semibold py-3 px-8 rounded-xl hover:bg-zinc-100 transition-all shadow-lg shadow-white/10 hover:-translate-y-0.5"
-            >
-              Get Started <ArrowRight className="w-4 h-4" />
-            </Link>
+      {/* ═══ FEATURES ═══ */}
+      <section className="py-28 px-6">
+        <div className="max-w-5xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl font-black font-display tracking-tight mb-4 text-text-primary">How it works</h2>
+            <p className="text-lg text-text-muted max-w-xl mx-auto">We capture the chaos. You engineer the solution.</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {features.map((f, i) => (
+              <motion.div key={f.title} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.6, delay: i * 0.1 }} className="liquid-glass rounded-2xl p-8 group hover:border-border-hover transition-all">
+                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center mb-5 shadow-lg`}>
+                  <f.icon className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-text-primary mb-3 font-display">{f.title}</h3>
+                <p className="text-sm text-text-muted leading-relaxed">{f.desc}</p>
+              </motion.div>
+            ))}
           </div>
-        </motion.div>
+        </div>
       </section>
+
+      {/* ═══ SAMPLE PROBLEMS ═══ */}
+      <section className="py-28 px-6">
+        <div className="max-w-5xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl font-black font-display tracking-tight mb-4 text-text-primary">See what&apos;s waiting</h2>
+            <p className="text-lg text-text-muted max-w-xl mx-auto">Real problems from real developers, validated and ready to solve.</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {sampleCards.map((card, i) => (
+              <motion.div key={card.title} initial={{ opacity: 0, y: 50, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true, margin: "-60px" }} transition={{ type: "spring", stiffness: 200, damping: 22, delay: i * 0.1 }}>
+                <div className="liquid-glass rounded-2xl p-7 group hover:border-border-hover transition-all h-full">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent-soft text-accent-text border border-accent/15">{card.domain}</span>
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-bg-surface text-text-muted border border-border-default">{card.difficulty}</span>
+                  </div>
+                  <h4 className="text-xl font-bold text-text-primary mb-4 leading-tight font-display">{card.title}</h4>
+                  <div className="flex items-center gap-4 text-xs text-text-muted">
+                    <span className="flex items-center gap-1.5"><BarChart3 className="w-3.5 h-3.5 text-emerald-500" /> {card.viability}</span>
+                    <span className="flex items-center gap-1.5"><Code2 className="w-3.5 h-3.5" /> {card.stack.join(", ")}</span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ CTA ═══ */}
+      <section className="py-28 px-6">
+        <div className="max-w-lg mx-auto">
+          <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true, margin: "-80px" }} transition={{ type: "spring", stiffness: 150, damping: 20 }} className="liquid-glass rounded-[32px] p-10 md:p-14 text-center relative overflow-hidden animate-pulse-glow">
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent" />
+            <div className="w-14 h-14 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-accent to-indigo-700 flex items-center justify-center shadow-lg shadow-accent/20">
+              <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-black font-display tracking-tight mb-3 text-text-primary">Claim your problem.</h2>
+            <p className="text-text-muted text-base mb-10 max-w-sm mx-auto leading-relaxed">
+              Stop building tutorials. Start solving real problems that real companies actually need.
+            </p>
+            <Link href="#login" className="group inline-flex items-center justify-center gap-2.5 w-full bg-accent hover:bg-accent-hover text-white font-bold py-4 px-8 rounded-2xl transition-all hover:scale-[0.98] active:scale-95 shadow-lg shadow-accent/20 text-base">
+              Create Account & View Feed <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <Link href="/dashboard" className="mt-4 inline-flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border border-border-default hover:bg-bg-surface text-text-muted hover:text-text-primary font-semibold text-sm transition-all">
+              Browse First
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══ FOOTER (landing-specific) ═══ */}
+      <footer className="border-t border-border-default py-8 text-center text-xs text-text-muted bg-bg-primary/80 backdrop-blur-md">
+        <p>&copy; {new Date().getFullYear()} Developers Paradise · Built with Next.js + Gemini AI</p>
+      </footer>
+      </div>
     </div>
-  );
+  )
 }

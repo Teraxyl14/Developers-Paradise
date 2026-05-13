@@ -10,6 +10,7 @@ type RankedUser = {
   upvotesReceived: number
   reposLinked: number
   score: number
+  denseRank: number
 }
 
 function PodiumCard({ user, rank, delay }: { user: RankedUser, rank: number, delay: number }) {
@@ -18,7 +19,9 @@ function PodiumCard({ user, rank, delay }: { user: RankedUser, rank: number, del
     2: { gradient: "from-zinc-300 to-zinc-400", ring: "ring-zinc-300/30", height: "h-24", medal: "🥈", shadow: "shadow-zinc-400/20" },
     3: { gradient: "from-amber-600 to-amber-700", ring: "ring-amber-600/30", height: "h-20", medal: "🥉", shadow: "shadow-amber-600/20" },
   }
-  const c = config[rank]
+  // Fallback to 3 if somehow denseRank is > 3 in the top 3 slice
+  const safeRank = rank > 3 ? 3 : rank;
+  const c = config[safeRank]
 
   return (
     <motion.div
@@ -79,7 +82,7 @@ export function LeaderboardView({ rankedUsers }: { rankedUsers: RankedUser[] }) 
       {top3.length >= 3 && (
         <div className="flex items-end justify-center gap-4 md:gap-6 mb-12">
           {top3.map((user, i) => (
-            <PodiumCard key={user.id} user={user} rank={i + 1} delay={i * 0.15} />
+            <PodiumCard key={user.id} user={user} rank={user.denseRank} delay={i * 0.15} />
           ))}
         </div>
       )}
@@ -120,12 +123,12 @@ export function LeaderboardView({ rankedUsers }: { rankedUsers: RankedUser[] }) 
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className={`flex items-center justify-center w-8 h-8 rounded-lg font-bold text-sm ${
-                      index === 0 ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-500/10 dark:text-yellow-400' :
-                      index === 1 ? 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400' :
-                      index === 2 ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' :
+                      user.denseRank === 1 ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-500/10 dark:text-yellow-400' :
+                      user.denseRank === 2 ? 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400' :
+                      user.denseRank === 3 ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' :
                       'bg-zinc-100 text-zinc-500 dark:bg-zinc-800/50 dark:text-zinc-500'
                     }`}>
-                      {index + 1}
+                      {user.denseRank}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

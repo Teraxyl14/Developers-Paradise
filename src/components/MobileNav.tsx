@@ -1,8 +1,9 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Menu, X, Compass, BarChart3, Trophy, PlusCircle, User, Shield, LogIn } from "lucide-react"
 import { usePathname } from "next/navigation"
+import { motion, AnimatePresence } from "framer-motion"
 
 export function MobileNav({ isAdmin, isLoggedIn }: { isAdmin: boolean, isLoggedIn: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -17,47 +18,97 @@ export function MobileNav({ isAdmin, isLoggedIn }: { isAdmin: boolean, isLoggedI
     ...(isAdmin ? [{ href: "/admin", label: "Admin", icon: Shield }] : []),
   ]
 
+  // Close nav when route changes
+  useEffect(() => {
+    setIsOpen(false)
+  }, [pathname])
+
+  // Prevent scroll when open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => { document.body.style.overflow = 'unset' }
+  }, [isOpen])
+
+  const menuVariants = {
+    closed: { opacity: 0, y: -20, scale: 0.95 },
+    open: { opacity: 1, y: 0, scale: 1, transition: { type: "spring" as const, stiffness: 300, damping: 25, staggerChildren: 0.05, delayChildren: 0.1 } }
+  }
+
+  const itemVariants = {
+    closed: { opacity: 0, x: -20 },
+    open: { opacity: 1, x: 0 }
+  }
+
   return (
     <div className="md:hidden">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center w-9 h-9 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/[0.04] transition-all"
+        className="relative z-50 flex items-center justify-center w-9 h-9 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-all"
       >
-        {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        <AnimatePresence mode="wait">
+          {isOpen ? (
+            <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
+              <X className="w-5 h-5" />
+            </motion.div>
+          ) : (
+            <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
+              <Menu className="w-5 h-5" />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </button>
 
-      {isOpen && (
-        <>
-          <div className="fixed inset-0 z-40 bg-black/20 dark:bg-black/40 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 right-0 z-50 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-white/10 shadow-xl p-4 space-y-1">
-            {links.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                  pathname === href 
-                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' 
-                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.04]'
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                {label}
-              </Link>
-            ))}
-            {!isLoggedIn && (
-              <Link
-                href="/api/auth/signin?callbackUrl=/dashboard"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all"
-              >
-                <LogIn className="w-5 h-5" />
-                Sign In
-              </Link>
-            )}
-          </div>
-        </>
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="fixed inset-0 z-40 bg-bg-primary/80 backdrop-blur-md" 
+              onClick={() => setIsOpen(false)} 
+            />
+            <motion.div 
+              variants={menuVariants}
+              initial="closed"
+              animate="open"
+              exit="closed"
+              className="absolute top-full left-4 right-4 z-50 liquid-glass border border-border-default rounded-2xl shadow-2xl p-3 space-y-1 mt-2"
+            >
+              {links.map(({ href, label, icon: Icon }) => (
+                <motion.div key={href} variants={itemVariants}>
+                  <Link
+                    href={href}
+                    className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all ${
+                      pathname === href 
+                        ? 'bg-accent-soft text-accent-text' 
+                        : 'text-text-secondary hover:bg-bg-surface-hover'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {label}
+                  </Link>
+                </motion.div>
+              ))}
+              {!isLoggedIn && (
+                <motion.div variants={itemVariants}>
+                  <Link
+                    href="#login"
+                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold text-white bg-accent hover:bg-accent-hover transition-all mt-2"
+                  >
+                    <LogIn className="w-5 h-5" />
+                    Sign In
+                  </Link>
+                </motion.div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

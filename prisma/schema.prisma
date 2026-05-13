@@ -27,6 +27,9 @@ model User {
   twitterUrl    String?
   websiteUrl    String?
   linkedinUrl   String?
+  reputationScore Int        @default(0)
+  currentStreak   Int        @default(0)
+  lastActiveDate  DateTime?
   accounts      Account[]
   sessions      Session[]
   savedIdeas    SavedIdea[]
@@ -230,6 +233,7 @@ model Message {
 model Upvote {
   userId    String
   ideaId    String
+  weight    Int      @default(1)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   idea      Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)

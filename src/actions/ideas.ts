@@ -80,7 +80,8 @@ export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'l
               .sort((a, b) => b[1] - a[1])
               .map(entry => entry[0]);
 
-          // Paginate the fused results
+          const totalCount = sortedFusedIds.length;
+          const totalPages = Math.ceil(totalCount / limit);
           const paginatedIds = sortedFusedIds.slice((page - 1) * limit, page * limit);
 
           if (paginatedIds.length > 0) {
@@ -105,13 +106,16 @@ export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'l
                  finalIdeas = finalIdeas.filter(i => i.repositories.length === 0);
              }
 
-             return finalIdeas;
+             return { ideas: finalIdeas, totalPages };
           }
+          return { ideas: [], totalPages: 0 };
       }
   }
 
   // 3. Fallback: Pure Keyword Search and Sorting (If no spaces, or API fails)
-  return prisma.idea.findMany({
+  const totalCount = await prisma.idea.count({ where: baseWhere });
+  const totalPages = Math.ceil(totalCount / limit);
+  const ideas = await prisma.idea.findMany({
     where: baseWhere,
     skip: (page - 1) * limit,
     take: limit,
@@ -126,4 +130,6 @@ export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'l
     },
     orderBy: orderByLogic
   });
+
+  return { ideas, totalPages };
 }

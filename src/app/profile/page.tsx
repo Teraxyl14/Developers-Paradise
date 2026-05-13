@@ -9,7 +9,7 @@ import { ProfileTabs } from "./ProfileTabs"
 
 export default async function ProfilePage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/api/auth/signin');
+  if (!session?.user?.id) redirect('/#login');
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },

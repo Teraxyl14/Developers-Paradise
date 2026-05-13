@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma"
 
 export default async function InboxPage({ searchParams }: { searchParams: Promise<{ composeTo?: string, context?: string }> }) {
   const session = await auth();
-  if (!session?.user?.id) redirect('/api/auth/signin');
+  if (!session?.user?.id) redirect('/#login');
 
   const resolvedParams = await searchParams;
   const messages = await getConversations();
