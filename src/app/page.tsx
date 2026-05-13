@@ -62,7 +62,7 @@ export default function LandingPage() {
       <div className="fixed inset-0 z-0 flex items-start justify-center pointer-events-none overflow-hidden pt-6 sm:pt-8">
         <motion.h1 
           style={{ y: riserY, opacity: riserOpacity, fontFamily: "var(--font-bebas)" }}
-          className="text-[12vw] sm:text-[14vw] font-normal leading-none text-white whitespace-nowrap tracking-tight select-none drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+          className="text-[12vw] sm:text-[14vw] font-normal leading-none text-text-primary whitespace-nowrap tracking-tight select-none drop-shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
         >
           BUILD WHAT DEVS <span className="text-gradient">NEED</span>
         </motion.h1>
@@ -109,11 +109,11 @@ export default function LandingPage() {
         <div className="relative z-10 text-center max-w-3xl px-6 mt-8">
 
 
-          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.4 }} className="text-5xl sm:text-7xl md:text-8xl font-black font-display leading-[0.92] tracking-tight mb-6 drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)]">
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.4 }} className="text-5xl sm:text-7xl md:text-8xl font-black font-display leading-[0.92] tracking-tight mb-6 drop-shadow-[0_4px_10px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)] text-text-primary">
             Developers <span className="text-gradient">Paradise</span>
           </motion.h1>
 
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.8 }} className="text-lg md:text-xl text-white max-w-2xl mx-auto leading-relaxed mb-10 drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.8 }} className="text-lg md:text-xl text-text-primary max-w-2xl mx-auto leading-relaxed mb-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
             The ultimate platform to discover, build, and ship solutions for real developer problems. Stop guessing—solve what the market actually needs right now.
           </motion.p>
 
@@ -139,7 +139,7 @@ export default function LandingPage() {
 
       {/* ═══ STATS ═══ */}
       <section className="border-y border-border-default bg-bg-secondary/50 backdrop-blur-sm py-14">
-        <div className="max-w-4xl mx-auto px-6 grid grid-cols-3 gap-8">
+        <div className="max-w-4xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-3 gap-8">
           <Counter value="2,400+" label="Problems Discovered" />
           <Counter value="150+" label="Active Builders" />
           <Counter value="800+" label="AI Analyses Run" />

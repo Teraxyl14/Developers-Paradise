@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 /** 
  * >>> ADJUSTABLE GLOBE PARAMETERS ARE BELOW IN GLOBE_CONFIG <<<
  */
@@ -45,9 +45,9 @@ export const GLOBE_CONFIG = {
     atmosphere: "#0ea5e9",
     atmosphereOpacity: 0.010,
     landLines: "#4ade80",
-    oceanLines: "#60a5fa",
-    landNode: [0.30, 0.88, 0.50], // RGB format [0-1]
-    oceanNode: [0.38, 0.65, 0.98]
+    oceanLines: "#2563eb",
+    landNode: [0.09, 0.64, 0.29], // RGB format [0-1]
+    oceanNode: [0.15, 0.39, 0.92]
   },
 
   // 6. Light Mode Colors
@@ -504,7 +504,7 @@ export function NetworkEarth({
 
 export function SpaceParticles({ theme = "dark" }: { theme?: string }) {
   const pointsRef = useRef<THREE.Points>(null!)
-  
+
   const starTexture = useMemo(() => {
     if (typeof document === "undefined") return null
     const canvas = document.createElement("canvas")
@@ -539,14 +539,14 @@ export function SpaceParticles({ theme = "dark" }: { theme?: string }) {
   if (theme === "light") return null
   return (
     <points ref={pointsRef} geometry={geo}>
-      <pointsMaterial 
-        color="#ffffff" 
-        size={0.08} 
-        transparent 
-        opacity={0.8} 
-        map={starTexture as THREE.Texture} 
-        alphaTest={0.01} 
-        sizeAttenuation 
+      <pointsMaterial
+        color="#ffffff"
+        size={0.08}
+        transparent
+        opacity={0.8}
+        map={starTexture as THREE.Texture}
+        alphaTest={0.01}
+        sizeAttenuation
       />
     </points>
   )
