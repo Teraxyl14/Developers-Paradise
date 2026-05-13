@@ -1,15 +1,24 @@
 "use client"
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export function AuthModal() {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
+  const { status } = useSession()
 
   useEffect(() => {
+    if (status === 'authenticated') {
+      setIsOpen(false)
+      if (window.location.hash === '#login') {
+        router.replace(window.location.pathname + window.location.search, { scroll: false })
+      }
+      return
+    }
+
     const handleHashChange = () => {
       setIsOpen(window.location.hash === '#login')
     }
@@ -19,11 +28,11 @@ export function AuthModal() {
     
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
-  }, [])
+  }, [status, router])
 
   const close = () => {
     setIsOpen(false)
-    window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    router.replace(window.location.pathname + window.location.search, { scroll: false })
   }
 
   return (
