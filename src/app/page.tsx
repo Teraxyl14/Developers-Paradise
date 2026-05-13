@@ -59,7 +59,7 @@ export default function LandingPage() {
       </div>
 
       {/* ═══ LAYER 2: BACKGROUND RISER TEXT ═══ */}
-      <div className="fixed inset-0 z-0 flex items-start justify-center pointer-events-none overflow-hidden pt-[18vh] sm:pt-8">
+      <div className="fixed inset-0 z-0 flex items-center justify-center pointer-events-none overflow-hidden pb-[20vh] sm:pb-[10vh]">
         <motion.h1 
           style={{ y: riserY, opacity: riserOpacity, fontFamily: "var(--font-bebas)" }}
           className="text-[12vw] sm:text-[14vw] font-normal leading-none text-text-primary whitespace-nowrap tracking-tight select-none drop-shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
@@ -89,27 +89,27 @@ export default function LandingPage() {
         <div className="absolute inset-0 z-[1] bg-gradient-to-b from-transparent via-transparent to-bg-primary pointer-events-none" />
 
         {/* Inline nav */}
-        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-6 py-5 max-w-6xl mx-auto w-full">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-lg overflow-hidden border border-border-default shadow-lg shadow-accent/10 group-hover:scale-105 transition-transform">
+        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-5 max-w-6xl mx-auto w-full">
+          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group shrink-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg overflow-hidden border border-border-default shadow-lg shadow-accent/10 group-hover:scale-105 transition-transform">
               <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
             </div>
             <span className="font-bold font-display text-text-primary text-lg hidden sm:inline">DevParadise</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="p-2 rounded-lg hover:bg-bg-surface transition-colors text-text-muted hover:text-text-primary">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="p-1.5 sm:p-2 rounded-lg hover:bg-bg-surface transition-colors text-text-muted hover:text-text-primary">
               {mounted ? (theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />) : <div className="w-4 h-4" />}
             </button>
-            <a href="#login" className="text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors">Sign In</a>
-            <Link href="/dashboard" className="text-sm font-semibold px-4 py-2 rounded-xl bg-accent text-white hover:bg-accent-hover transition-colors">Explore</Link>
+            <a href="#login" className="text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors">Sign In</a>
+            <Link href="/dashboard" className="text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-accent text-white hover:bg-accent-hover transition-colors">Explore</Link>
           </div>
         </div>
 
         {/* Hero text */}
-        <div className="relative z-10 text-center max-w-3xl px-6 mt-8">
+        <div className="relative z-10 text-center max-w-3xl px-4 sm:px-6 mt-2 sm:mt-8">
 
 
-          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.4 }} className="text-5xl sm:text-7xl md:text-8xl font-black font-display leading-[0.92] tracking-tight mb-6 drop-shadow-[0_4px_10px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)] text-text-primary">
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.4 }} className="text-4xl sm:text-6xl md:text-8xl font-black font-display leading-[1.0] sm:leading-[0.92] tracking-tight mb-4 sm:mb-6 drop-shadow-[0_4px_10px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)] text-text-primary">
             Developers <span className="text-gradient">Paradise</span>
           </motion.h1>
 
@@ -137,8 +137,11 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* ═══ STATS ═══ */}
-      <section className="border-y border-border-default bg-bg-secondary/50 backdrop-blur-sm py-14">
+      {/* ═══ SCROLLING CONTENT WRAPPER ═══ */}
+      <div className="relative z-10 bg-bg-primary">
+        
+        {/* ═══ STATS ═══ */}
+        <section className="border-y border-border-default bg-bg-secondary/50 backdrop-blur-sm py-10 sm:py-14">
         <div className="max-w-4xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-3 gap-8">
           <Counter value="2,400+" label="Problems Discovered" />
           <Counter value="150+" label="Active Builders" />
@@ -218,10 +221,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══ FOOTER (landing-specific) ═══ */}
-      <footer className="border-t border-border-default py-8 text-center text-xs text-text-muted bg-bg-primary/80 backdrop-blur-md">
-        <p>&copy; {new Date().getFullYear()} Developers Paradise · Built with Next.js + Gemini AI</p>
-      </footer>
+        {/* ═══ FOOTER (landing-specific) ═══ */}
+        <footer className="border-t border-border-default py-8 text-center text-xs text-text-muted bg-bg-primary">
+          <p>&copy; {new Date().getFullYear()} Developers Paradise · Built with Next.js + Gemini AI</p>
+        </footer>
       </div>
     </div>
   )
