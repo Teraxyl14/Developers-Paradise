@@ -121,9 +121,21 @@ export function TrendsDashboard({ domainData, stackData, difficultyData, cluster
               <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<GalaxyTooltip />} />
               <Scatter name="Clusters" data={clusterData} fill="#8b5cf6">
                 {clusterData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={getPMFColor(entry.pmfScore || 0)} fillOpacity={0.85} stroke={getPMFColor(entry.pmfScore || 0)} strokeWidth={1} />
+                   <Cell key={`cell-${index}`} fill={getPMFColor(entry.pmfScore || 0)} fillOpacity={0.85} stroke={getPMFColor(entry.pmfScore || 0)} strokeWidth={1} />
                 ))}
-                <LabelList dataKey="summary" position="top" style={{ fill: '#71717a', fontSize: 10, fontWeight: 600 }} />
+                <LabelList 
+                  content={(props: any) => {
+                    const { x, y, value, index } = props;
+                    const isGeneric = value === "Developer Pain Points" || !value;
+                    const label = isGeneric ? `Cluster #${index + 1}` : value;
+                    return (
+                      <text x={x} y={y - 10} fill="#71717a" fontSize={10} fontWeight={600} textAnchor="middle">
+                        {label}
+                      </text>
+                    );
+                  }} 
+                  dataKey="summary" 
+                />
               </Scatter>
             </ScatterChart>
           </ResponsiveContainer>

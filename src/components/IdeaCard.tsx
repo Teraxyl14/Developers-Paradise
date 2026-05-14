@@ -1,32 +1,50 @@
 "use client"
 import { motion } from "framer-motion"
 import { ChevronUp, MessageSquare, Clock } from "lucide-react"
+import { upvoteIdea } from "@/actions/interactions"
+
+import { useTransition } from "react"
 import { useRouter } from "next/navigation"
 
-export function IdeaCard({ idea }: { idea: any }) {
-  const router = useRouter()
+export function IdeaCard({ idea, onClick }: { idea: any, onClick?: () => void }) {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const isUpvoted = idea.upvotes?.length > 0;
 
-  const handleClick = () => {
-    router.push(`?ideaId=${idea.id}`, { scroll: false })
-  }
+  const handleUpvote = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    startTransition(async () => {
+      try {
+        await upvoteIdea(idea.id);
+        router.refresh();
+      } catch (error) {
+        console.error("Failed to upvote", error);
+      }
+    });
+  };
 
   return (
     <motion.div 
       layoutId={`card-${idea.id}`}
       whileHover={{ scale: 0.995 }}
       whileTap={{ scale: 0.99 }}
-      onClick={handleClick}
+      onClick={onClick}
       className="group liquid-glass rounded-2xl p-5 text-text-primary transition-all cursor-pointer relative overflow-hidden"
     >
       <div className="flex gap-4">
         {/* Upvote Column */}
         <div className="flex flex-col items-center shrink-0">
           <button 
-            className="flex flex-col items-center justify-center w-10 h-12 rounded-lg bg-bg-surface border border-border-default hover:bg-bg-surface-hover hover:border-border-hover transition-colors"
-            onClick={(e) => { e.stopPropagation(); }}
+            onClick={handleUpvote}
+            className={`flex flex-col items-center justify-center w-10 h-12 rounded-lg border transition-all ${
+              isUpvoted 
+                ? "bg-accent/20 border-accent/50 text-accent-text shadow-inner shadow-accent/10" 
+                : "bg-bg-surface border-border-default hover:bg-bg-surface-hover hover:border-border-hover text-text-muted"
+            } ${isPending ? "opacity-70 grayscale" : ""}`}
+            disabled={isPending}
           >
-            <ChevronUp className="w-5 h-5 -mb-1 text-text-muted group-hover:text-text-primary transition-colors" />
-            <span className="text-xs font-bold text-text-secondary">{idea._count?.upvotes || 0}</span>
+            <ChevronUp className={`w-5 h-5 -mb-1 transition-colors ${isUpvoted ? "text-accent" : "group-hover:text-text-primary"}`} />
+            <span className={`text-xs font-bold ${isUpvoted ? "text-accent-text" : "text-text-secondary"}`}>{idea._count?.upvotes || 0}</span>
           </button>
         </div>
 

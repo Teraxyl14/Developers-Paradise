@@ -3,6 +3,8 @@ import { useState } from "react"
 import { IdeaCard } from "@/components/IdeaCard"
 import { motion } from "framer-motion"
 import { Settings, Lightbulb, Bookmark, GitBranch, ArrowUpRight } from "lucide-react"
+import { ExpandedIdeaModal } from "@/components/ExpandedIdeaModal"
+import { AnimatePresence } from "framer-motion"
 
 const tabs = [
   { key: "edit", label: "Edit Profile", icon: Settings },
@@ -18,6 +20,10 @@ export function ProfileTabs({ editForm, submittedIdeas, savedIdeas, repositories
   repositories: any[]
 }) {
   const [active, setActive] = useState("edit");
+  const [activeIdeaId, setActiveIdeaId] = useState<string | null>(null);
+  
+  const allIdeas = [...submittedIdeas, ...savedIdeas];
+  const activeIdea = allIdeas.find(i => i.id === activeIdeaId);
 
   return (
     <div>
@@ -54,7 +60,7 @@ export function ProfileTabs({ editForm, submittedIdeas, savedIdeas, repositories
             </div>
           )}
           {submittedIdeas.map((idea) => (
-            <IdeaCard key={idea.id} idea={idea} />
+            <IdeaCard key={idea.id} idea={idea} onClick={() => setActiveIdeaId(idea.id)} />
           ))}
         </div>
       )}
@@ -68,7 +74,7 @@ export function ProfileTabs({ editForm, submittedIdeas, savedIdeas, repositories
             </div>
           )}
           {savedIdeas.map((idea) => (
-            <IdeaCard key={idea.id} idea={idea} />
+            <IdeaCard key={idea.id} idea={idea} onClick={() => setActiveIdeaId(idea.id)} />
           ))}
         </div>
       )}
@@ -92,6 +98,12 @@ export function ProfileTabs({ editForm, submittedIdeas, savedIdeas, repositories
           ))}
         </div>
       )}
+      {/* Modal Integration */}
+      <AnimatePresence>
+        {activeIdeaId && activeIdea && (
+          <ExpandedIdeaModal idea={activeIdea} onClose={() => setActiveIdeaId(null)} />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -9,7 +9,7 @@ import { ProfileTabs } from "./ProfileTabs"
 
 export default async function ProfilePage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/#login');
+  if (!session?.user?.id) redirect('/api/auth/signin');
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -20,7 +20,10 @@ export default async function ProfilePage() {
     }
   });
 
-  if (!user) return null;
+  if (!user) {
+    console.error("User not found in database:", session.user.id);
+    redirect('/');
+  }
 
   // Compute stats
   const [upvotesReceived, commentsMade] = await Promise.all([

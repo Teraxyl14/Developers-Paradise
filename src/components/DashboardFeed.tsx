@@ -15,7 +15,7 @@ export function DashboardFeed({ initialIdeas, currentSort, currentQuery, initial
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const activeIdeaId = searchParams.get('ideaId');
+  const [activeIdeaId, setActiveIdeaId] = useState<string | null>(null);
   
   const ideas = initialIdeas;
   
@@ -170,7 +170,7 @@ export function DashboardFeed({ initialIdeas, currentSort, currentQuery, initial
             key={idea.id}
             variants={itemVariants}
           >
-             <IdeaCard idea={idea} />
+             <IdeaCard idea={idea} onClick={() => setActiveIdeaId(idea.id)} />
           </motion.div>
         ))}
         
@@ -185,7 +185,7 @@ export function DashboardFeed({ initialIdeas, currentSort, currentQuery, initial
 
       <AnimatePresence>
         {activeIdeaId && (
-          <ExpandedIdeaModal idea={ideas.find(i => i.id === activeIdeaId)} />
+          <ExpandedIdeaModal idea={ideas.find(i => i.id === activeIdeaId)} onClose={() => setActiveIdeaId(null)} />
         )}
       </AnimatePresence>
 

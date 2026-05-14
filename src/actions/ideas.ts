@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
 import { GoogleGenAI } from "@google/genai"
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = process.env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }) : null;
 const RRF_K = 60;
 
 export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'latest', searchQuery: string = '', page: number = 1, limit: number = 10) {
@@ -28,19 +28,20 @@ export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'l
                    : { createdAt: 'desc' as const };
 
   // 2. Hybrid Search Logic (Triggered if query implies natural language)
-  if (searchQuery.includes(" ") && process.env.GEMINI_API_KEY) {
+  if (searchQuery.includes(" ") && ai) {
       let embeddingResult;
       try {
-         const response = await ai.models.embedContent({
+         // Using the older stable syntax supported by this SDK version
+         const response: any = await (ai as any).models.embedContent({
            model: 'gemini-embedding-001',
-           contents: searchQuery,
+           contents: [{ parts: [{ text: searchQuery }] }],
          });
          embeddingResult = response.embeddings?.[0]?.values;
       } catch(e) {
          console.error("Search embedding failed", e);
       }
 
-      if (embeddingResult && embeddingResult.length === 3072) {
+      if (embeddingResult && embeddingResult.length === 768) {
           const formattedEmbedding = `[${embeddingResult.join(',')}]`;
           
           // Execute both searches in parallel for maximum speed
