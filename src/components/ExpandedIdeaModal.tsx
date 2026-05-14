@@ -149,14 +149,17 @@ export function ExpandedIdeaModal({ idea, onClose }: { idea: any, onClose: () =>
               {isWaitlisted ? "On Waitlist" : "Join Waitlist"} <HandMetal className="w-4 h-4" />
             </button>
             <button 
-              onClick={() => document.getElementById('comment-input')?.focus()}
+              onClick={() => {
+                document.getElementById('discussion-section')?.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(() => document.getElementById('comment-input')?.focus(), 500);
+              }}
               className={`flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-black bg-bg-surface border border-border-default text-text-primary hover:bg-bg-surface-hover transition-all active:scale-95 ${isPending ? "opacity-70" : ""}`}
             >
               Discuss <MessageSquare className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-border-default">
+          <div id="discussion-section" className="mt-8 pt-8 border-t border-border-default">
             <h3 className="text-lg font-bold text-text-primary mb-4">Discussion</h3>
             <form onSubmit={handleComment} className="flex gap-3 mb-6">
               <input 
