@@ -96,7 +96,8 @@ export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'l
                   _count: { select: { upvotes: true, comments: true } },
                   upvotes: session?.user?.id ? { where: { userId: session.user.id } } : undefined,
                   waitlist: session?.user?.id ? { where: { userId: session.user.id } } : undefined,
-                  author: { select: { name: true, id: true } }
+                  author: { select: { name: true, id: true } },
+                  comments: { include: { user: { select: { name: true, id: true, image: true } } }, orderBy: { createdAt: 'desc' } }
                 }
              });
 
@@ -127,7 +128,8 @@ export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'l
       _count: { select: { upvotes: true, comments: true } },
       upvotes: session?.user?.id ? { where: { userId: session.user.id } } : undefined,
       waitlist: session?.user?.id ? { where: { userId: session.user.id } } : undefined,
-      author: { select: { name: true, id: true } }
+      author: { select: { name: true, id: true } },
+      comments: { include: { user: { select: { name: true, id: true, image: true } } }, orderBy: { createdAt: 'desc' } }
     },
     orderBy: orderByLogic
   });

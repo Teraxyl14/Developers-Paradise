@@ -24,7 +24,7 @@ export function IdeaCard({ idea, onClick }: { idea: any, onClick?: () => void })
   };
 
   return (
-    <motion.div 
+    <motion.div
       layoutId={`card-${idea.id}`}
       whileHover={{ scale: 0.995 }}
       whileTap={{ scale: 0.99 }}
@@ -34,13 +34,12 @@ export function IdeaCard({ idea, onClick }: { idea: any, onClick?: () => void })
       <div className="flex gap-4">
         {/* Upvote Column */}
         <div className="flex flex-col items-center shrink-0">
-          <button 
+          <button
             onClick={handleUpvote}
-            className={`flex flex-col items-center justify-center w-10 h-12 rounded-lg border transition-all ${
-              isUpvoted 
-                ? "bg-accent/20 border-accent/50 text-accent-text shadow-inner shadow-accent/10" 
+            className={`flex flex-col items-center justify-center w-10 h-12 rounded-lg border transition-all ${isUpvoted
+                ? "bg-accent/20 border-accent/50 text-accent-text shadow-inner shadow-accent/10"
                 : "bg-bg-surface border-border-default hover:bg-bg-surface-hover hover:border-border-hover text-text-muted"
-            } ${isPending ? "opacity-70 grayscale" : ""}`}
+              } ${isPending ? "opacity-70 grayscale" : ""}`}
             disabled={isPending}
           >
             <ChevronUp className={`w-5 h-5 -mb-1 transition-colors ${isUpvoted ? "text-accent" : "group-hover:text-text-primary"}`} />
@@ -53,11 +52,11 @@ export function IdeaCard({ idea, onClick }: { idea: any, onClick?: () => void })
           <motion.h3 layoutId={`title-${idea.id}`} className="text-lg font-bold font-display leading-tight mb-2 group-hover:text-accent-text transition-colors line-clamp-2">
             {idea.title}
           </motion.h3>
-          
+
           <motion.p layoutId={`desc-${idea.id}`} className="text-xs text-text-muted line-clamp-2 mb-4 leading-relaxed">
             {idea.description}
           </motion.p>
-          
+
           {/* Metadata Row */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-accent-soft text-accent-text border border-accent/10">
