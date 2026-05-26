@@ -74,24 +74,14 @@ graph TD;
 
 ## 💡 Key Features
 
-### Core Platform
+- **Secure Multi-Provider Auth**: Seamless authentication system supporting Google, GitHub, and local Credentials with industry-standard bcrypt hashing, styled flawlessly in a dynamic glassmorphism modal.
 - **Premium UI/UX**: Built with Framer Motion, Tailwind CSS v4, and custom glassmorphism utilities for a dynamic, modern SaaS experience.
 - **Idea Dashboard**: View dynamic feeds of AI-curated and user-submitted ideas, ranked by Trending, Latest, or Contrarian demand signals.
 - **Market Intelligence & Trends**: Visualize "The Market Galaxy" — a PMF-scored heatmap of AI-clustered developer complaints, color-coded by validated market demand (cool blue → hot red).
 - **AI Architecture Roasts**: Link your GitHub repo to an idea and let Gemini 2.5 Pro generate a customized "Roast" analyzing your tech stack, architecture, and deployment strategy.
 - **Gamified Leaderboard**: Climb the ranks on an animated top-3 podium based on ideas submitted, upvotes received, and repos linked.
 - **Multi-Source Autonomous Scraping**: Automatically scheduled via GitHub Actions (`cron`) to scrape StackOverflow, GitHub, Reddit, HackerNews, and more.
-
-### V1.5 — Quality of Life (Latest)
-- **Inline Discuss**: The "Discuss" button now expands the idea card, scrolls to comments, and auto-focuses the input — no page navigation required.
-- **Auth-Gated Interactions**: Unauthenticated users can browse freely; clicking Upvote, Save, Waitlist, or Discuss redirects to login.
-- **Revamped Filters**: Labeled filter groups (Difficulty + Domain dropdown), live count badges, and a "Clear filters" button for the dashboard feed.
-- **Profile Upgrade**: Tabbed interface (Edit / My Ideas / Saved / Projects), activity stats bar, 4 social links (GitHub, Twitter, Website, LinkedIn), and "Member since" date.
-- **Distinct Chart Palettes**: Semantic colors for difficulty (green/amber/red), teal for domains, purple gradient for stacks — no more visual confusion.
-- **PMF Heatmap Galaxy**: Market Galaxy now includes a legend, info callout, cluster name labels, and a continuous PMF color scale.
-- **Admin Access Control**: Styled "Access Denied" page for unauthorized users instead of a silent redirect.
-- **Click Feedback**: All interactive buttons now have `active:scale-95` tactile feedback for instant responsiveness.
-- **Cleaner Branding**: Navbar shows logo icon only; replaced all overused "pain point" terminology with varied vocabulary.
+- **Admin Access Control**: Styled "Access Denied" page for unauthorized users instead of a silent redirect, and robust route protection for interactions.
 
 <br/>
 
@@ -152,8 +142,13 @@ Copy `.env.example` to `.env` (or create one):
 # Database
 DATABASE_URL="postgresql://user:password@localhost:5432/problemsite"
 
-# Authentication
+# Authentication & OAuth
 AUTH_SECRET="your-nextauth-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
+AUTH_GOOGLE_ID="your_google_client_id"
+AUTH_GOOGLE_SECRET="your_google_client_secret"
+AUTH_GITHUB_ID="your_github_client_id"
+AUTH_GITHUB_SECRET="your_github_client_secret"
 
 # AI & Scraping
 GEMINI_API_KEY="your-gemini-api-key"

@@ -48,6 +48,7 @@ export default async function RootLayout({
       <body className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} ${bebasNeue.variable} font-sans bg-bg-primary text-text-primary antialiased min-h-screen flex flex-col transition-colors duration-300`}>
         <Providers>
           <CommandPalette />
+          <AuthModal />
           <MainAppWrapper>
             {/* Header — hidden on landing page via LayoutChrome */}
             <LayoutChrome>

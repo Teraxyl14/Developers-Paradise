@@ -19,7 +19,8 @@ export function AuthModal() {
     if (status === 'authenticated') {
       setIsOpen(false)
       if (window.location.hash === '#login') {
-        router.replace(window.location.pathname + window.location.search, { scroll: false })
+        window.history.replaceState(null, '', window.location.pathname + window.location.search)
+        window.dispatchEvent(new HashChangeEvent('hashchange'))
       }
       return
     }
@@ -33,11 +34,24 @@ export function AuthModal() {
     
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
-  }, [status, router])
+  }, [status])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        close()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen])
 
   const close = () => {
     setIsOpen(false)
-    router.replace(window.location.pathname + window.location.search, { scroll: false })
+    if (window.location.hash === '#login') {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -82,22 +96,28 @@ export function AuthModal() {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+        <motion.div 
+          key="auth-modal-container"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-6"
+        >
+          {/* Backdrop */}
+          <div 
             className="absolute inset-0 bg-black/60 backdrop-blur-md"
             onClick={close}
           />
+          
+          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="relative w-full max-w-md bg-zinc-950/80 backdrop-blur-2xl border border-white/10 p-8 rounded-3xl shadow-2xl overflow-hidden"
+            className="relative z-10 w-full max-w-md bg-zinc-950/80 backdrop-blur-2xl border border-white/10 p-8 rounded-3xl shadow-2xl overflow-hidden"
           >
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyber-indigo to-crimson-danger" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent to-danger" />
             
             <button 
               onClick={close}
@@ -107,7 +127,7 @@ export function AuthModal() {
             </button>
 
             <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto bg-black border border-white/10 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-cyber-indigo/20">
+              <div className="w-16 h-16 mx-auto bg-black border border-white/10 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-accent/20">
                 <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain" />
               </div>
               <h2 className="text-2xl font-bold font-display text-white mb-2">
@@ -150,7 +170,7 @@ export function AuthModal() {
                       name="name"
                       placeholder="Full Name"
                       required
-                      className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl leading-5 bg-white/5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyber-indigo focus:border-cyber-indigo transition-all sm:text-sm"
+                      className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl leading-5 bg-white/5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all sm:text-sm"
                     />
                   </motion.div>
                 )}
@@ -165,7 +185,7 @@ export function AuthModal() {
                   name="email"
                   placeholder="Email Address"
                   required
-                  className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl leading-5 bg-white/5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyber-indigo focus:border-cyber-indigo transition-all sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl leading-5 bg-white/5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all sm:text-sm"
                 />
               </div>
 
@@ -178,14 +198,14 @@ export function AuthModal() {
                   name="password"
                   placeholder="Password"
                   required
-                  className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl leading-5 bg-white/5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyber-indigo focus:border-cyber-indigo transition-all sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl leading-5 bg-white/5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all sm:text-sm"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-cyber-indigo hover:bg-cyber-indigo/90 text-white font-semibold py-3.5 px-4 rounded-xl transition-transform hover:scale-[0.98] active:scale-95 shadow-lg shadow-cyber-indigo/25 disabled:opacity-70 disabled:hover:scale-100 mt-2"
+                className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-white font-semibold py-3.5 px-4 rounded-xl transition-transform hover:scale-[0.98] active:scale-95 shadow-lg shadow-accent/25 disabled:opacity-70 disabled:hover:scale-100 mt-2"
               >
                 {loading && <Loader2 className="w-5 h-5 animate-spin" />}
                 {mode === 'signin' ? 'Sign In' : 'Create Account'}
@@ -227,13 +247,13 @@ export function AuthModal() {
                   setMode(mode === 'signin' ? 'signup' : 'signin')
                   setError(null)
                 }}
-                className="text-cyber-indigo hover:text-cyber-indigo/80 font-medium transition-colors"
+                className="text-accent hover:text-accent/80 font-medium transition-colors"
               >
                 {mode === 'signin' ? 'Sign up' : 'Sign in'}
               </button>
             </div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   )
