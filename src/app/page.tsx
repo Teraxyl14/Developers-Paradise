@@ -107,7 +107,7 @@ export default function LandingPage() {
 
   const handleUpvote = async (id: string) => {
     if (!session) {
-      signIn('google', { callbackUrl: '/dashboard' })
+      window.location.hash = '#login'
       return
     }
 
@@ -291,7 +291,7 @@ export default function LandingPage() {
               </Link>
             ) : (
               <button
-                onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+                onClick={() => { window.location.hash = '#login' }}
                 className="text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
               >
                 Sign In
@@ -416,7 +416,7 @@ export default function LandingPage() {
                 </Link>
               ) : (
                 <button
-                  onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+                  onClick={() => { window.location.hash = '#login' }}
                   className="group inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:scale-[0.98] active:scale-95 shadow-lg shadow-accent/20 text-sm w-full sm:w-auto"
                 >
                   Get Started Free <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -812,7 +812,7 @@ export default function LandingPage() {
               </Link>
             ) : (
               <button 
-                onClick={() => signIn('google', { callbackUrl: '/dashboard' })} 
+                onClick={() => { window.location.hash = '#login' }} 
                 className="group inline-flex items-center justify-center gap-2.5 bg-accent hover:bg-accent-hover text-white font-black py-4 px-8 rounded-2xl transition-all hover:scale-[0.98] active:scale-95 shadow-xl shadow-accent/25 text-sm uppercase tracking-wider cursor-pointer"
               >
                 Start Building Now <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
