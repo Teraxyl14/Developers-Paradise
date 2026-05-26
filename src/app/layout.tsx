@@ -20,7 +20,7 @@ const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space
 const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"], variable: "--font-bebas" });
 
 export const metadata: Metadata = {
-  title: "Developers Paradise | Discover Validated Dev Problems",
+  title: "Developer's Paradise | Discover Validated Dev Problems",
   description: "Discover validated developer problems and build your next project.",
   icons: {
     icon: [
@@ -56,7 +56,7 @@ export default async function RootLayout({
                   <div className="flex items-center gap-6">
                     <Link href="/" className="flex items-center gap-2.5 group">
                       <div className="w-9 h-9 rounded-lg overflow-hidden shadow-lg shadow-accent/15 group-hover:shadow-accent/30 transition-all border border-border-default shrink-0 group-hover:scale-105">
-                        <img src="/logo.png" alt="Developers Paradise Logo" className="w-full h-full object-cover" />
+                        <img src="/logo.png" alt="Developer's Paradise Logo" className="w-full h-full object-cover" />
                       </div>
                     </Link>
 
@@ -93,7 +93,7 @@ export default async function RootLayout({
                         <div className="w-6 h-6 rounded-md overflow-hidden border border-border-default">
                           <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
                         </div>
-                        <span className="font-bold text-text-primary font-display">DevParadise</span>
+                        <span className="font-bold text-text-primary font-display">Developer's Paradise</span>
                       </div>
                       <p className="text-sm text-text-muted leading-relaxed max-w-xs">
                         AI-powered developer problem discovery platform. Find validated problems, build what matters.
@@ -117,7 +117,7 @@ export default async function RootLayout({
                     </div>
                   </div>
                   <div className="border-t border-border-default pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-text-muted">
-                    <span>&copy; {new Date().getFullYear()} Developers Paradise. All rights reserved.</span>
+                    <span>&copy; {new Date().getFullYear()} Developer's Paradise. All rights reserved.</span>
                     <span className="flex items-center gap-1.5">Built with <span className="font-medium text-text-secondary">Next.js</span> + <span className="font-medium text-text-secondary">Gemini AI</span></span>
                   </div>
                 </div>

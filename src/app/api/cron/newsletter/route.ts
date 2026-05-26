@@ -65,13 +65,13 @@ export async function GET(request: Request) {
         <h2 style="color: #3b82f6;">Top 5 Developer Problems of the Week</h2>
         <p style="color: #444; font-size: 16px; line-height: 1.5;">Here are the most upvoted problems that developers are actively begging someone to solve. Pick one and start building your next SaaS today.</p>
         ${ideasHtml}
-        <p style="color: #888; font-size: 12px; margin-top: 32px; text-align: center;">You are receiving this because you signed up for Developers Paradise. <a href="${process.env.AUTH_URL}/profile" style="color: #888;">Manage Profile</a></p>
+        <p style="color: #888; font-size: 12px; margin-top: 32px; text-align: center;">You are receiving this because you signed up for Developer's Paradise. <a href="${process.env.AUTH_URL}/profile" style="color: #888;">Manage Profile</a></p>
       </div>
     `;
 
     // 4. Dispatch email batch
     await resend.emails.send({
-      from: 'Developers Paradise <newsletter@developersparadise.dev>',
+      from: "Developer's Paradise <newsletter@developersparadise.dev>",
       to: emails, // Note: In a massive production app, you should chunk this or use BCC/broadcast logic.
       subject: 'This week\'s top developer problems to build',
       html: htmlContent

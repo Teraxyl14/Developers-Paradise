@@ -6,6 +6,11 @@ import { GoogleGenAI } from "@google/genai"
 const ai = process.env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }) : null;
 const RRF_K = 60;
 
+interface VectorSearchHit {
+  id: string;
+  similarity: number;
+}
+
 export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'latest', searchQuery: string = '', page: number = 1, limit: number = 10) {
   const session = await auth();
   
@@ -31,23 +36,22 @@ export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'l
   if (searchQuery.includes(" ") && ai) {
       let embeddingResult;
       try {
-         // Using the older stable syntax supported by this SDK version
-         const response: any = await (ai as any).models.embedContent({
+         const response = await ai.models.embedContent({
            model: 'gemini-embedding-001',
-           contents: [{ parts: [{ text: searchQuery }] }],
+           contents: searchQuery,
          });
          embeddingResult = response.embeddings?.[0]?.values;
       } catch(e) {
          console.error("Search embedding failed", e);
       }
 
-      if (embeddingResult && embeddingResult.length === 768) {
+      if (embeddingResult && embeddingResult.length === 3072) {
           const formattedEmbedding = `[${embeddingResult.join(',')}]`;
           
           // Execute both searches in parallel for maximum speed
           const [rawVectorResults, keywordResults] = await Promise.all([
              // Vector Dense Search
-             prisma.$queryRaw<any[]>`
+             prisma.$queryRaw<VectorSearchHit[]>`
                 SELECT id, 1 - (embedding <=> ${formattedEmbedding}::vector) as similarity
                 FROM "Idea"
                 WHERE embedding IS NOT NULL
@@ -77,7 +81,7 @@ export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'l
           });
 
           // Sort combined unique IDs by their fused mathematical score
-          let sortedFusedIds = Array.from(rrfScores.entries())
+          const sortedFusedIds = Array.from(rrfScores.entries())
               .sort((a, b) => b[1] - a[1])
               .map(entry => entry[0]);
 
@@ -136,3 +140,64 @@ export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'l
 
   return { ideas, totalPages };
 }
+
+export async function getLandingStats() {
+  try {
+    const [problemsCount, usersCount, analysisCount, repoCount] = await Promise.all([
+      prisma.idea.count(),
+      prisma.user.count(),
+      prisma.marketAnalysis.count(),
+      prisma.repository.count({
+        where: {
+          architectureReport: {
+            not: null
+          }
+        }
+      })
+    ]);
+    return {
+      problems: problemsCount,
+      users: usersCount,
+      analyses: analysisCount + repoCount
+    };
+  } catch (e) {
+    console.error("Failed to fetch landing stats:", e);
+    return {
+      problems: 0,
+      users: 0,
+      analyses: 0
+    };
+  }
+}
+
+export async function getFeaturedIdeas() {
+  try {
+    const ideas = await prisma.idea.findMany({
+      orderBy: [
+        { mentionCount: 'desc' },
+        { upvotes: { _count: 'desc' } }
+      ],
+      take: 3,
+      select: {
+        id: true,
+        title: true,
+        domain: true,
+        difficulty: true,
+        devTime: true,
+        recommendedStack: true,
+        mentionCount: true,
+        _count: {
+          select: { upvotes: true }
+        }
+      }
+    });
+    return ideas.map(idea => ({
+      ...idea,
+      upvotesCount: idea._count.upvotes
+    }));
+  } catch (e) {
+    console.error("Failed to fetch featured ideas:", e);
+    return [];
+  }
+}
+

@@ -8,7 +8,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!idea) return { title: "Idea Not Found" };
 
   return {
-    title: `${idea.title} | DevParadise`,
+    title: `${idea.title} | Developer's Paradise`,
     description: idea.description,
     openGraph: {
       title: idea.title,
