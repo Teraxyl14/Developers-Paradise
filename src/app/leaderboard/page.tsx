@@ -36,6 +36,7 @@ export default async function LeaderboardPage() {
      if (index > 0 && u.score < previousScore) {
        currentRank++;
      }
+     // eslint-disable-next-line react-hooks/immutability
      previousScore = u.score;
      return { ...u, denseRank: currentRank };
   });

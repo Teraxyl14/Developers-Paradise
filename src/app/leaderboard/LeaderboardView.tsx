@@ -74,13 +74,13 @@ export function LeaderboardView({ rankedUsers }: { rankedUsers: RankedUser[] }) 
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 shadow-lg shadow-yellow-500/20 mb-4">
           <Trophy className="w-7 h-7 text-white" />
         </div>
-        <h1 className="text-4xl font-bold text-zinc-900 dark:text-white tracking-tight mb-3">Top Developers</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white tracking-tight mb-3">Top Developers</h1>
         <p className="text-zinc-500 dark:text-zinc-400">The most impactful builders actively solving real developer problems.</p>
       </motion.div>
 
       {/* Podium */}
       {top3.length >= 3 && (
-        <div className="flex items-end justify-center gap-4 md:gap-6 mb-12">
+        <div className="flex items-end justify-center gap-2 sm:gap-4 md:gap-6 mb-8 sm:mb-12">
           {top3.map((user, i) => (
             <PodiumCard key={user.id} user={user} rank={user.denseRank} delay={i * 0.15} />
           ))}
@@ -98,9 +98,9 @@ export function LeaderboardView({ rankedUsers }: { rankedUsers: RankedUser[] }) 
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-zinc-50/80 dark:bg-zinc-900/80 border-b border-zinc-200/80 dark:border-white/[0.06]">
-                <th className="px-6 py-4 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Rank</th>
-                <th className="px-6 py-4 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Developer</th>
-                <th className="px-6 py-4 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider text-center">Score</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Rank</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Developer</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider text-center">Score</th>
                 <th className="px-6 py-4 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider text-center hidden sm:table-cell">
                   <Lightbulb className="w-3.5 h-3.5 inline -mt-0.5" /> Ideas
                 </th>

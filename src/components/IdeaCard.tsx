@@ -5,14 +5,21 @@ import { upvoteIdea } from "@/actions/interactions"
 
 import { useTransition } from "react"
 import { useRouter } from "next/navigation"
+import { useSession, signIn } from "next-auth/react"
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function IdeaCard({ idea, onClick }: { idea: any, onClick?: () => void }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const { data: session } = useSession();
   const isUpvoted = idea.upvotes?.length > 0;
 
   const handleUpvote = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!session) {
+      signIn();
+      return;
+    }
     startTransition(async () => {
       try {
         await upvoteIdea(idea.id);

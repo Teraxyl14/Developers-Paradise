@@ -4,7 +4,7 @@ import { SubmitButton } from "@/components/SubmitButton"
 
 export default function SubmitIdeaPage() {
   return (
-    <main className="max-w-2xl mx-auto py-12 px-4 md:px-6 text-zinc-900 dark:text-white">
+    <main className="max-w-2xl mx-auto py-8 sm:py-12 px-4 md:px-6 text-zinc-900 dark:text-white">
       <div className="mb-10">
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg shadow-indigo-500/20 mb-4">
           <Lightbulb className="w-6 h-6 text-white" />

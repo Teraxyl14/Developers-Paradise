@@ -4,7 +4,6 @@ import Link from "next/link"
 import { Menu, X, Compass, BarChart3, Trophy, PlusCircle, User, Shield, LogIn } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { signIn } from "next-auth/react"
 
 export function MobileNav({ isAdmin, isLoggedIn }: { isAdmin: boolean, isLoggedIn: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -21,7 +20,8 @@ export function MobileNav({ isAdmin, isLoggedIn }: { isAdmin: boolean, isLoggedI
 
   // Close nav when route changes
   useEffect(() => {
-    setIsOpen(false)
+    const handle = requestAnimationFrame(() => setIsOpen(false))
+    return () => cancelAnimationFrame(handle)
   }, [pathname])
 
   // Prevent scroll when open

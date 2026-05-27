@@ -3,7 +3,9 @@ import { useState, useTransition } from "react"
 import { generateMarketAnalysis } from "@/actions/analysis"
 import { Bot, ShieldAlert, Zap, Search, ExternalLink, Target } from "lucide-react"
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function MarketIntelligence({ ideaId, initialAnalysis }: { ideaId: string, initialAnalysis?: any }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [analysis, setAnalysis] = useState<any>(initialAnalysis);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -14,8 +16,12 @@ export function MarketIntelligence({ ideaId, initialAnalysis }: { ideaId: string
       try {
         const result = await generateMarketAnalysis(ideaId);
         setAnalysis(result);
-      } catch (e: any) {
-        setError(e.message || "Failed to generate analysis");
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          setError(e.message || "Failed to generate analysis");
+        } else {
+          setError("Failed to generate analysis");
+        }
       }
     });
   };
@@ -99,6 +105,7 @@ export function MarketIntelligence({ ideaId, initialAnalysis }: { ideaId: string
           <div>
              <h5 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Identified Competitors</h5>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {analysis.competitors?.map((comp: any, i: number) => (
                    <div key={i} className="bg-zinc-50 dark:bg-zinc-950/50 p-3.5 rounded-lg border border-zinc-100 dark:border-white/5">
                       <div className="flex items-center gap-2 mb-1.5">

@@ -84,6 +84,7 @@ export default function LandingPage() {
 
   // Satisfying gamified states
   const [upvotedIdeas, setUpvotedIdeas] = useState<string[]>([])
+  const [countDeltas, setCountDeltas] = useState<Record<string, number>>({})
   const [personaType, setPersonaType] = useState("saas")
   const [clockMotto, setClockMotto] = useState("Perfect hour to refactor.")
 
@@ -107,6 +108,7 @@ export default function LandingPage() {
 
   const handleUpvote = async (id: string) => {
     if (!session) {
+      // eslint-disable-next-line react-hooks/immutability
       window.location.hash = '#login'
       return
     }
@@ -114,8 +116,10 @@ export default function LandingPage() {
     const isAlreadyUpvoted = upvotedIdeas.includes(id)
     if (isAlreadyUpvoted) {
       setUpvotedIdeas(prev => prev.filter(item => item !== id))
+      setCountDeltas(prev => ({ ...prev, [id]: (prev[id] || 0) - 1 }))
     } else {
       setUpvotedIdeas(prev => [...prev, id])
+      setCountDeltas(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }))
     }
 
     try {
@@ -125,8 +129,10 @@ export default function LandingPage() {
       // Rollback optimistic state on backend failure
       if (isAlreadyUpvoted) {
         setUpvotedIdeas(prev => [...prev, id])
+        setCountDeltas(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }))
       } else {
         setUpvotedIdeas(prev => prev.filter(item => item !== id))
+        setCountDeltas(prev => ({ ...prev, [id]: (prev[id] || 0) - 1 }))
       }
     }
   }
@@ -365,10 +371,10 @@ export default function LandingPage() {
       </div>
 
       {/* ═══ LAYER 2: BACKGROUND RISER TEXT ═══ */}
-      <div className="fixed inset-0 z-0 flex items-start justify-center pointer-events-none overflow-hidden pt-24 sm:pt-20">
+      <div className="fixed inset-0 z-0 flex items-start justify-center pointer-events-none overflow-hidden pt-28 sm:pt-20">
         <motion.h1
           style={{ y: riserY, scale: riserScale, opacity: riserOpacity, fontFamily: "var(--font-bebas)" }}
-          className="text-[12vw] sm:text-[14vw] font-normal leading-none text-text-primary whitespace-nowrap tracking-tight select-none drop-shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+          className="text-[9vw] sm:text-[12vw] md:text-[13vw] lg:text-[14vw] font-normal leading-none text-text-primary whitespace-nowrap tracking-tight select-none drop-shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
         >
           BUILD WHAT DEVS <span className="text-gradient">NEED</span>
         </motion.h1>
@@ -395,14 +401,14 @@ export default function LandingPage() {
           <div className="absolute inset-0 z-[1] bg-gradient-to-b from-transparent via-transparent to-bg-primary pointer-events-none" />
 
           {/* Hero text */}
-          <div className="relative z-10 text-center max-w-3xl px-4 sm:px-6 mt-2 sm:mt-8">
+          <div className="relative z-10 text-center max-w-3xl px-5 sm:px-6 mt-6 sm:mt-8">
 
 
-            <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.4 }} className="text-4xl sm:text-6xl md:text-8xl font-black font-display leading-[1.0] sm:leading-[0.92] tracking-tight mb-4 sm:mb-6 drop-shadow-[0_4px_10px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)] text-text-primary">
+            <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.4 }} className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black font-display leading-[1.05] sm:leading-[0.92] tracking-tight mb-4 sm:mb-6 drop-shadow-[0_4px_10px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)] text-text-primary">
               Developer&apos;s <span className="text-gradient">Paradise</span>
             </motion.h1>
 
-            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.8 }} className="text-lg md:text-xl text-text-primary max-w-2xl mx-auto leading-relaxed mb-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
+            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.8 }} className="text-sm sm:text-base md:text-lg lg:text-xl text-text-primary max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
               The ultimate platform to discover, build, and ship solutions for real developer problems. Stop guessing—solve what the market actually needs right now.
             </motion.p>
 
@@ -444,7 +450,7 @@ export default function LandingPage() {
           {/* ═══ REAL TELEMETRY STATS ═══ */}
           <section className="border-y border-border-default bg-bg-secondary/50 backdrop-blur-sm py-10 sm:py-14 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-transparent to-purple-500/5 opacity-30 pointer-events-none" />
-            <div className="max-w-4xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-3 gap-8 relative z-10">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8 relative z-10">
               <Counter value={statsLoaded ? stats.problems : 0} label="Problems Scraped" />
               <Counter value={statsLoaded ? stats.users : 0} label="Registered Active Builders" />
               <Counter value={statsLoaded ? stats.analyses : 0} label="AI Architecture Reports" />
@@ -452,7 +458,7 @@ export default function LandingPage() {
           </section>
 
           {/* ═══ THE CINEMATIC NARRATIVE STORY (THE DEVELOPER'S PARADOX) ═══ */}
-          <section className="py-24 sm:py-32 px-4 sm:px-6 bg-gradient-to-b from-bg-primary via-bg-secondary/40 to-bg-primary border-b border-border-default/40 overflow-hidden">
+          <section className="py-16 sm:py-24 lg:py-32 px-4 sm:px-6 bg-gradient-to-b from-bg-primary via-bg-secondary/40 to-bg-primary border-b border-border-default/40 overflow-hidden">
             <div className="max-w-6xl mx-auto">
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -461,7 +467,7 @@ export default function LandingPage() {
                 className="text-center mb-16 sm:mb-20"
               >
                 <span className="text-xs uppercase tracking-widest font-black text-accent mb-2 block font-mono">Conceptual Paradigm</span>
-                <h2 className="text-4xl sm:text-6xl font-black font-display tracking-tight mb-6 text-text-primary">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-display tracking-tight mb-6 text-text-primary">
                   The Developer&apos;s <span className="text-gradient">Paradox</span>
                 </h2>
                 <p className="text-lg text-text-muted max-w-3xl mx-auto leading-relaxed">
@@ -478,7 +484,7 @@ export default function LandingPage() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-60px" }}
                   transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                  className="rounded-3xl border border-danger/10 bg-gradient-to-b from-danger-soft/10 via-transparent to-transparent p-8 flex flex-col justify-between relative overflow-hidden"
+                  className="rounded-3xl border border-danger/10 bg-gradient-to-b from-danger-soft/10 via-transparent to-transparent p-5 sm:p-8 flex flex-col justify-between relative overflow-hidden"
                 >
                   {/* Visual badge */}
                   <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
@@ -550,7 +556,7 @@ export default function LandingPage() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-60px" }}
                   transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                  className="rounded-3xl border border-emerald-500/15 bg-gradient-to-b from-success-soft/20 via-transparent to-transparent p-8 flex flex-col justify-between relative overflow-hidden"
+                  className="rounded-3xl border border-emerald-500/15 bg-gradient-to-b from-success-soft/20 via-transparent to-transparent p-5 sm:p-8 flex flex-col justify-between relative overflow-hidden"
                 >
                   {/* Visual badge */}
                   <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
@@ -644,7 +650,7 @@ export default function LandingPage() {
           </section>
 
           {/* ═══ OPPORTUNITY RADAR CONSOLE ═══ */}
-          <section className="py-32 px-6 border-b border-border-default/40 bg-bg-secondary/20 relative overflow-hidden">
+          <section className="py-16 sm:py-24 lg:py-32 px-4 sm:px-6 border-b border-border-default/40 bg-bg-secondary/20 relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--accent-soft),transparent_70%)] opacity-30 pointer-events-none" />
 
             <div className="max-w-5xl mx-auto relative z-10">
@@ -655,7 +661,7 @@ export default function LandingPage() {
                 className="text-center mb-20"
               >
                 <span className="text-xs uppercase tracking-widest font-black text-purple-500 mb-2 block font-mono">Live Telemetry</span>
-                <h2 className="text-4xl sm:text-5xl font-black font-display tracking-tight mb-4 text-text-primary">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-display tracking-tight mb-4 text-text-primary">
                   Target Opportunity <span className="text-gradient">Radar</span>
                 </h2>
                 <p className="text-lg text-text-muted max-w-xl mx-auto leading-relaxed">
@@ -663,7 +669,7 @@ export default function LandingPage() {
                 </p>
               </motion.div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
                 {featuredIdeas.map((idea, i) => (
                   <motion.div
                     key={idea.id}
@@ -675,7 +681,7 @@ export default function LandingPage() {
                     style={{ animationDelay: `${i * 0.5}s`, animationDuration: '6s' }}
                   >
                     {/* Terminal styling shell */}
-                    <div className="liquid-glass rounded-2xl p-7 flex flex-col h-full hover:border-accent/40 hover:shadow-2xl hover:shadow-accent/5 transition-all duration-300 relative overflow-hidden bg-bg-surface backdrop-blur-md">
+                    <div className="liquid-glass rounded-2xl p-5 sm:p-7 flex flex-col h-full hover:border-accent/40 hover:shadow-2xl hover:shadow-accent/5 transition-all duration-300 relative overflow-hidden bg-bg-surface backdrop-blur-md">
 
                       {/* Decorative scanline overlay */}
                       <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_4px,3px_100%] pointer-events-none opacity-10" />
@@ -736,7 +742,7 @@ export default function LandingPage() {
                           >
                             <ChevronUp className={`w-3.5 h-3.5 ${upvotedIdeas.includes(idea.id) ? 'animate-bounce' : 'group-hover/upvote:-translate-y-0.5 transition-transform'}`} />
                             <span className="font-mono font-bold text-[10px]">
-                              {idea.upvotesCount + (upvotedIdeas.includes(idea.id) ? 1 : 0)}
+                              {idea.upvotesCount + (countDeltas[idea.id] || 0)}
                             </span>
                           </button>
                         </div>
@@ -779,7 +785,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }} 
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-black font-display tracking-tight text-text-primary leading-[1.05] sm:leading-[1.02] mb-6 max-w-3xl"
+            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black font-display tracking-tight text-text-primary leading-[1.08] sm:leading-[1.05] lg:leading-[1.02] mb-6 max-w-3xl"
           >
             Build What Developers <span className="text-gradient">Actually Need.</span>
           </motion.h2>

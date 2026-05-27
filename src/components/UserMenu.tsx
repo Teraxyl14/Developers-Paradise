@@ -1,11 +1,11 @@
 "use client"
 import { useState } from "react"
-import { signOut, signIn } from "next-auth/react"
+import { signOut } from "next-auth/react"
 import Link from "next/link"
 import { LogOut, User } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
-export function UserMenu({ session }: { session: any }) {
+export function UserMenu({ session }: { session: { user?: { name?: string | null; email?: string | null; image?: string | null } } | null }) {
   const [isOpen, setIsOpen] = useState(false)
 
   if (!session?.user) {
@@ -26,6 +26,7 @@ export function UserMenu({ session }: { session: any }) {
         className="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-bg-surface transition-all"
       >
         {session.user.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={session.user.image} alt="" className="w-7 h-7 rounded-full ring-2 ring-bg-primary shadow-sm" />
         ) : (
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold shadow-sm ring-2 ring-bg-primary">
@@ -43,7 +44,7 @@ export function UserMenu({ session }: { session: any }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -4, scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              className="absolute right-0 mt-2 w-56 liquid-glass rounded-xl shadow-xl z-50 overflow-hidden py-1"
+              className="absolute right-0 mt-2 w-56 bg-bg-primary border border-border-default rounded-xl shadow-xl z-50 overflow-hidden py-1"
             >
               <div className="px-4 py-3 border-b border-border-default">
                 <p className="text-sm font-semibold text-text-primary truncate">{session.user.name}</p>

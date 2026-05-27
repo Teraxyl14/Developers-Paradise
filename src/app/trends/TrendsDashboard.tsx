@@ -1,16 +1,9 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ScatterChart, Scatter, ZAxis, LabelList } from 'recharts';
 import { useState, useEffect } from 'react';
-import { Sparkles, AlertTriangle, ShieldAlert, TrendingUp, Info } from "lucide-react"
-
-// Distinct color palettes for each chart type
-const DIFFICULTY_COLORS: Record<string, string> = {
-  'Beginner': '#22c55e',
-  'Intermediate': '#f59e0b',
-  'Advanced': '#ef4444',
-};
-
-const DOMAIN_COLORS = ['#06b6d4', '#0891b2', '#0e7490', '#155e75', '#164e63', '#134e4a', '#115e59', '#0d9488', '#14b8a6', '#2dd4bf'];
+import { Sparkles, AlertTriangle, ShieldAlert, Target, Flame, Code2, Rocket, ArrowRight, ArrowUpRight, CheckCircle2, Activity, Zap, TrendingUp } from "lucide-react"
+import { motion } from "framer-motion"
+import Link from "next/link"
 
 // PMF Heatmap: 0 = cool blue, 50 = amber, 100 = hot red
 function getPMFColor(score: number): string {
@@ -30,7 +23,24 @@ function getPMFColor(score: number): string {
   }
 }
 
-export function TrendsDashboard({ domainData, stackData, difficultyData, clusterData = [], fragileDeps = [] }: { domainData: any[], stackData: any[], difficultyData: any[], clusterData?: any[], fragileDeps?: any[] }) {
+function getClusterName(cluster: { summary?: string, ideas?: { domain?: string, title: string }[] }, index: number): string {
+  const summary = cluster?.summary;
+  const isGeneric = !summary || summary.trim().toLowerCase() === "developer pain points";
+  if (!isGeneric) return summary as string;
+  
+  if (cluster?.ideas && cluster.ideas.length > 0) {
+    const firstIdea = cluster.ideas[0];
+    if (firstIdea.domain) {
+      return `${firstIdea.domain} Issues`;
+    }
+    const words = firstIdea.title.split(' ').slice(0, 4).join(' ');
+    return `${words}...`;
+  }
+  return `Market Segment #${index + 1}`;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function TrendsDashboard({ domainData, stackData, difficultyData, clusterData = [], fragileDeps = [] }: { domainData: { name: string; count: number }[], stackData: { name: string; count: number }[], difficultyData: { name: string; count: number }[], clusterData?: { id: string; summary: string; size: number; x: number; y: number; pmfScore?: number | null; ideas?: any[] }[], fragileDeps?: { id: string; name: string; ecosystem: string; complaintCount: number }[] }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -41,220 +51,283 @@ export function TrendsDashboard({ domainData, stackData, difficultyData, cluster
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center text-zinc-500 gap-3">
         <div className="w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-        <span className="text-sm">Loading metrics...</span>
+        <span className="text-sm font-medium">Crunching market data...</span>
       </div>
     );
   }
   
-  const GalaxyTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-zinc-950/95 border border-zinc-700 p-4 rounded-xl shadow-2xl backdrop-blur-sm max-w-xs">
-          <p className="text-white font-bold mb-1 leading-tight">{data.summary}</p>
-          <div className="flex items-center gap-3 mt-2">
-            <span className="text-indigo-400 text-xs font-semibold">{data.size} ideas in cluster</span>
-            {data.pmfScore != null && (
-              <span className="text-xs font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: getPMFColor(data.pmfScore), color: data.pmfScore > 60 ? '#fff' : '#18181b' }}>
-                PMF: {Math.round(data.pmfScore)}
-              </span>
-            )}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const ChartTooltipStyle = {
-    backgroundColor: 'rgba(9,9,11,0.95)', 
-    border: '1px solid rgba(255,255,255,0.1)', 
-    borderRadius: '12px', 
-    color: '#fff',
-    padding: '8px 12px',
-    fontSize: '12px',
-    boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
-  };
+  // Calculate max values for thresholds
+  const maxDomainCount = Math.max(...domainData.map(d => d.count), 1);
+  
+  const featuredCluster = clusterData[0];
+  const indexClusters = clusterData.slice(1, 6);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="flex flex-col gap-10">
       
-      {/* Market Galaxy */}
-      <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-950 border border-indigo-200/50 dark:border-white/[0.06] rounded-2xl p-6 shadow-sm md:col-span-3 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-200/30 via-transparent to-transparent dark:from-indigo-900/20 dark:via-zinc-950 dark:to-zinc-950 pointer-events-none" />
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4 relative z-10">
-          <div>
-            <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-1 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
-              The Market Galaxy
-            </h3>
-            <p className="text-sm text-zinc-500 dark:text-zinc-500 ml-10">AI-clustered developer complaints mapped by market demand.</p>
-          </div>
-
-          {/* Legend */}
-          <div className="flex flex-col gap-2 text-xs text-zinc-500 dark:text-zinc-400 bg-white/80 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 min-w-[200px]">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-zinc-300 dark:bg-zinc-600 border border-zinc-400 dark:border-zinc-500" />
-              <span>Bubble size = cluster size (# of ideas)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-1.5 rounded-full bg-gradient-to-r from-blue-400 via-amber-400 to-red-500" />
-              <span>Color = PMF score (cool → hot)</span>
-            </div>
-          </div>
+      {/* SECTION 1: SaaS Opportunity Index */}
+      <div>
+        <div className="mb-6">
+           <h3 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2 flex items-center gap-2">
+             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+               <Target className="w-4 h-4 text-white" />
+             </div>
+             SaaS Opportunity Index
+           </h3>
+           <p className="text-sm text-zinc-500 dark:text-zinc-400 ml-10">
+             Ranked target markets based on high Product-Market Fit validation scores and absolute complaint volume.
+           </p>
         </div>
 
-        {/* Info callout */}
-        <div className="flex items-start gap-2 bg-indigo-100/60 dark:bg-indigo-500/5 border border-indigo-200/50 dark:border-indigo-500/10 rounded-lg p-3 mb-4 relative z-10">
-          <Info className="w-4 h-4 text-indigo-500 dark:text-indigo-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-indigo-700/80 dark:text-indigo-300/80">Each bubble represents a cluster of similar developer complaints. Larger, hotter bubbles indicate higher validated market demand. Hover to see details.</p>
-        </div>
-        
-        <div className="h-96 w-full min-w-0 relative z-10">
-          <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-              <XAxis type="number" dataKey="x" hide domain={['auto', 'auto']} />
-              <YAxis type="number" dataKey="y" hide domain={['auto', 'auto']} />
-              <ZAxis type="number" dataKey="size" range={[150, 2500]} />
-              <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<GalaxyTooltip />} />
-              <Scatter name="Clusters" data={clusterData} fill="#8b5cf6">
-                {clusterData.map((entry, index) => (
-                   <Cell key={`cell-${index}`} fill={getPMFColor(entry.pmfScore || 0)} fillOpacity={0.85} stroke={getPMFColor(entry.pmfScore || 0)} strokeWidth={1} />
-                ))}
-                <LabelList 
-                  content={(props: any) => {
-                    const { x, y, value, index } = props;
-                    const isGeneric = value === "Developer Pain Points" || !value;
-                    const label = isGeneric ? `Cluster #${index + 1}` : value;
-                    return (
-                      <text x={x} y={y - 10} fill="#71717a" fontSize={10} fontWeight={600} textAnchor="middle">
-                        {label}
-                      </text>
-                    );
-                  }} 
-                  dataKey="summary" 
-                />
-              </Scatter>
-            </ScatterChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* PMF Heatmap scale */}
-        <div className="flex items-center gap-3 mt-4 relative z-10 justify-center">
-          <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Low PMF</span>
-          <div className="w-48 h-2.5 rounded-full bg-gradient-to-r from-blue-400 via-amber-400 to-red-500 shadow-inner" />
-          <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">High PMF</span>
-        </div>
-      </div>
-
-      {/* Difficulty Donut — Semantic colors */}
-      <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-white/[0.06] rounded-2xl p-6 shadow-sm md:col-span-2 flex flex-col items-center">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 self-start w-full flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-indigo-500" /> Difficulty Distribution
-        </h3>
-        <div className="h-64 w-full min-w-0 max-w-[400px] flex justify-center">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={difficultyData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={85}
-                paddingAngle={4}
-                dataKey="count"
-                stroke="none"
-              >
-                {difficultyData.map((entry) => (
-                  <Cell key={entry.name} fill={DIFFICULTY_COLORS[entry.name] || '#6366f1'} />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={ChartTooltipStyle} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="flex gap-6 mt-4">
-           {difficultyData.map((d) => (
-              <div key={d.name} className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: DIFFICULTY_COLORS[d.name] || '#6366f1' }}></span>
-                {d.name}
-              </div>
-           ))}
-        </div>
-      </div>
-
-      {/* Fragile Dependencies */}
-      <div className="bg-red-50/50 dark:bg-red-500/5 border border-red-200/80 dark:border-red-500/15 rounded-2xl p-6 shadow-sm md:col-span-1">
-        <h3 className="text-lg font-bold text-red-900 dark:text-red-400 mb-1 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg shadow-red-500/20">
-            <ShieldAlert className="w-4 h-4 text-white" />
-          </div>
-          Fragile Deps
-        </h3>
-        <p className="text-xs text-red-700/80 dark:text-red-400/60 mb-5 ml-10">Highest failure rates reported globally.</p>
-        <div className="space-y-2.5">
-          {fragileDeps.map((dep, i) => (
-            <div key={dep.id} className="flex items-center justify-between bg-white dark:bg-zinc-950/80 p-3 rounded-xl border border-red-100 dark:border-red-500/10 hover:border-red-200 dark:hover:border-red-500/20 transition-colors">
-               <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-red-100 dark:bg-red-500/15 flex items-center justify-center text-xs font-bold text-red-600 dark:text-red-400">
-                     {i + 1}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          
+          {/* Featured Market Deep Dive */}
+          {featuredCluster ? (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white dark:bg-zinc-950 border border-indigo-200 dark:border-indigo-900/50 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl shadow-indigo-500/5 relative overflow-hidden flex flex-col"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-100/50 via-transparent to-transparent dark:from-indigo-500/10 dark:via-transparent dark:to-transparent pointer-events-none" />
+              
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-500/30 flex items-center gap-1.5">
+                    <Flame className="w-3 h-3" /> #1 Featured Market
+                  </span>
+                </div>
+                
+                <h4 className="text-2xl font-bold text-zinc-900 dark:text-white leading-tight mb-6">
+                  {getClusterName(featuredCluster, 0)}
+                </h4>
+                
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl p-4 border border-zinc-100 dark:border-zinc-800">
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-bold block mb-1">Validation (PMF)</span>
+                    <span className="text-3xl font-black" style={{ color: getPMFColor(featuredCluster.pmfScore || 0) }}>
+                      {Math.round(featuredCluster.pmfScore || 0)}<span className="text-lg text-zinc-400 font-medium">/100</span>
+                    </span>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{dep.name}</p>
-                    <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{dep.ecosystem}</p>
+                  <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl p-4 border border-zinc-100 dark:border-zinc-800">
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-bold block mb-1">Market Volume</span>
+                    <span className="text-3xl font-black text-zinc-900 dark:text-white">
+                      {featuredCluster.size}<span className="text-lg text-zinc-400 font-medium"> signals</span>
+                    </span>
                   </div>
-               </div>
-               <span className="text-xs font-bold text-red-600 dark:text-red-400 flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3" /> {dep.complaintCount}
-               </span>
+                </div>
+
+                <div className="flex-1">
+                  <h5 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-indigo-500" /> Core Pain Points
+                  </h5>
+                  <ul className="space-y-3">
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    {featuredCluster.ideas?.map((idea: any) => (
+                      <li key={idea.id} className="flex items-start gap-2.5 text-sm text-zinc-600 dark:text-zinc-300 bg-white dark:bg-zinc-900 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                        <ArrowUpRight className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
+                        <span className="leading-snug">{idea.title}</span>
+                      </li>
+                    ))}
+                    {!featuredCluster.ideas?.length && (
+                      <li className="text-sm text-zinc-500 italic">No specific complaints extracted yet.</li>
+                    )}
+                  </ul>
+                </div>
+
+                <Link 
+                  href={`/dashboard?q=${encodeURIComponent(getClusterName(featuredCluster, 0))}`} 
+                  className="mt-8 w-full bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-950 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg"
+                >
+                  Explore Market Feed <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </motion.div>
+          ) : (
+            <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-3xl p-6 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center min-h-[400px]">
+              <span className="text-zinc-500">Not enough data to calculate featured market.</span>
             </div>
-          ))}
-          {fragileDeps.length === 0 && (
-             <p className="text-sm text-zinc-500 text-center py-4">No fragile dependencies detected.</p>
           )}
+
+          {/* The Index Leaderboard */}
+          <div className="flex flex-col bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+            <h4 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-6 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-zinc-500" /> The Index (Top 2-6)
+            </h4>
+            
+            <div className="flex flex-col gap-4">
+              {indexClusters.map((cluster, i) => (
+                <Link 
+                  href={`/dashboard?q=${encodeURIComponent(getClusterName(cluster, i + 1))}`}
+                  key={cluster.id}
+                  className="group flex flex-col p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-all hover:shadow-md cursor-pointer relative overflow-hidden"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h5 className="font-bold text-zinc-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors pr-4 leading-tight">
+                      {getClusterName(cluster, i + 1)}
+                    </h5>
+                    <div className="shrink-0 flex items-center gap-1.5 bg-white dark:bg-zinc-950 px-2 py-1 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">PMF</span>
+                      <span className="text-xs font-black" style={{ color: getPMFColor(cluster.pmfScore || 0) }}>
+                        {Math.round(cluster.pmfScore || 0)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400 font-medium mb-3">
+                    <span className="flex items-center gap-1">
+                      <Activity className="w-3.5 h-3.5" /> {cluster.size} signals
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-1 pl-3 border-l-2 border-indigo-200 dark:border-indigo-900/50">
+                    {cluster.ideas && cluster.ideas.length > 0 ? cluster.ideas[0].title : 'Exploring market potential...'}
+                  </div>
+                </Link>
+              ))}
+              {indexClusters.length === 0 && (
+                <div className="text-sm text-zinc-500 italic text-center py-8">
+                  Collecting more market data...
+                </div>
+              )}
+            </div>
+          </div>
+
         </div>
       </div>
 
-      {/* Domains — Teal color palette */}
-      <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-white/[0.06] rounded-2xl p-6 shadow-sm md:col-span-1">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6">Top Domains</h3>
-        <div className="h-72 w-full min-w-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={domainData} layout="vertical" margin={{ left: 40 }}>
-              <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#0891b2', fontSize: 12, fontWeight: 600}} />
-              <Tooltip cursor={{fill: 'transparent'}} contentStyle={ChartTooltipStyle} />
-              <Bar dataKey="count" radius={[0, 6, 6, 0]} barSize={20}>
-                {domainData.map((_, index) => (
-                  <Cell key={`domain-${index}`} fill={DOMAIN_COLORS[index % DOMAIN_COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
+        
+        {/* SECTION 2: Domain Urgency Grid */}
+        <div className="bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col">
+           <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-1 flex items-center gap-2">
+             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
+               <AlertTriangle className="w-4 h-4 text-white" />
+             </div>
+             Domain Urgency Grid
+           </h3>
+           <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-6 ml-10">
+             Where the market is bleeding the most. High-friction domains.
+           </p>
+
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              {domainData.map((domain, i) => {
+                const isExtreme = domain.count >= maxDomainCount * 0.8;
+                const isHigh = domain.count >= maxDomainCount * 0.4 && !isExtreme;
+                
+                return (
+                  <motion.div 
+                    key={domain.name}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.05 }}
+                    className={`flex flex-col p-4 rounded-2xl border ${isExtreme ? 'bg-rose-50 dark:bg-rose-500/5 border-rose-200 dark:border-rose-900/30' : isHigh ? 'bg-orange-50 dark:bg-orange-500/5 border-orange-200 dark:border-orange-900/30' : 'bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800'}`}
+                  >
+                    <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-2 truncate" title={domain.name}>{domain.name}</span>
+                    <div className="flex items-center justify-between mt-auto">
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${isExtreme ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400' : isHigh ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400' : 'bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400'}`}>
+                        {isExtreme ? '🔥 Extreme' : isHigh ? '🟠 High' : '🟡 Moderate'}
+                      </span>
+                      <span className="text-xs font-bold text-zinc-500">{domain.count} issues</span>
+                    </div>
+                  </motion.div>
+                )
+              })}
+           </div>
         </div>
+
+        {/* SECTION 3: The Blueprint (Ecosystem Gaps) */}
+        <div className="bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col">
+           <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-1 flex items-center gap-2">
+             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+               <Code2 className="w-4 h-4 text-white" />
+             </div>
+             Ecosystem Gaps
+           </h3>
+           <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-6 ml-10">
+             Tech stacks where developers are actively begging for solutions.
+           </p>
+
+           <div className="flex flex-wrap gap-2 sm:gap-3">
+              {stackData.map((stack, i) => (
+                <motion.div 
+                  key={stack.name}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 grow"
+                >
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{stack.name}</span>
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Unsolved Gaps</span>
+                  </div>
+                  <div className="ml-auto shrink-0 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-cyan-600 dark:text-cyan-400 font-black text-sm px-3 py-1 rounded-lg shadow-sm">
+                    {stack.count}
+                  </div>
+                </motion.div>
+              ))}
+              {stackData.length === 0 && (
+                <div className="text-sm text-zinc-500 text-center py-4 w-full">No tech stack data available.</div>
+              )}
+           </div>
+        </div>
+
       </div>
 
-      {/* Stacks — Purple gradient (kept distinct) */}
-      <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-white/[0.06] rounded-2xl p-6 shadow-sm md:col-span-2">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6">Most Recommended Tech Stacks</h3>
-        <div className="h-72 w-full min-w-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={stackData}>
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#8b5cf6', fontSize: 11, fontWeight: 600}} />
-              <YAxis hide />
-              <Tooltip cursor={{fill: '#27272a', opacity: 0.1}} contentStyle={ChartTooltipStyle} />
-              <Bar dataKey="count" fill="url(#stackGradient)" radius={[6, 6, 0, 0]} barSize={36} />
-              <defs>
-                <linearGradient id="stackGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#8b5cf6" />
-                  <stop offset="100%" stopColor="#6366f1" />
-                </linearGradient>
-              </defs>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      {/* SECTION 4: Disruption Targets */}
+      <div className="bg-zinc-900 dark:bg-zinc-950 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl relative overflow-hidden">
+         <div className="absolute top-0 right-0 p-8 pointer-events-none opacity-20">
+           <Zap className="w-64 h-64 text-red-500" />
+         </div>
+         
+         <div className="relative z-10">
+           <h3 className="text-2xl font-bold text-white mb-1 flex items-center gap-3">
+             <div className="w-10 h-10 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center shadow-lg shadow-red-500/20">
+               <ShieldAlert className="w-5 h-5 text-red-500" />
+             </div>
+             Disruption Targets
+           </h3>
+           <p className="text-sm text-zinc-400 mb-8 ml-13">
+             The Hit List: Failing open-source tools and dependencies. Build modern, stable alternatives.
+           </p>
+
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {fragileDeps.map((dep, i) => (
+                <motion.div 
+                  key={dep.id} 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="flex flex-col bg-zinc-950/80 p-5 rounded-2xl border border-red-500/20 hover:border-red-500/50 transition-colors shadow-lg"
+                >
+                   <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-3 w-3 relative">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
+                        <div>
+                          <p className="text-base font-bold text-white leading-none mb-1">{dep.name}</p>
+                          <p className="text-[10px] text-zinc-500 uppercase tracking-widest">{dep.ecosystem}</p>
+                        </div>
+                      </div>
+                   </div>
+                   
+                   <p className="text-xs text-zinc-400 mb-5 leading-relaxed bg-zinc-900 rounded-lg p-3 border border-zinc-800">
+                     <span className="text-red-400 font-bold">{dep.complaintCount} incident reports</span> indicate a high potential for a stable, drop-in replacement in the {dep.ecosystem} ecosystem.
+                   </p>
+                   
+                   <Link href={`/dashboard?q=${encodeURIComponent(dep.name)}`} className="mt-auto inline-flex items-center justify-center gap-2 text-xs font-bold text-white bg-zinc-800 hover:bg-zinc-700 transition-colors uppercase tracking-wider rounded-xl py-2.5 px-4 w-full">
+                     View Incident Reports <ArrowRight className="w-3.5 h-3.5" />
+                   </Link>
+                </motion.div>
+              ))}
+              {fragileDeps.length === 0 && (
+                 <div className="col-span-full text-sm text-zinc-500 text-center py-12 border border-dashed border-zinc-800 rounded-2xl">
+                   No disruption targets detected yet.
+                 </div>
+              )}
+           </div>
+         </div>
       </div>
 
     </div>

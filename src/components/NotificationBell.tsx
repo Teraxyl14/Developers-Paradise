@@ -7,6 +7,7 @@ import Link from "next/link"
 export function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export function NotificationBell() {
                     <div className="flex gap-3">
                       <div className="shrink-0 pt-0.5">
                         {notif.actor?.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img src={notif.actor.image} alt="" className="w-8 h-8 rounded-full" />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">{notif.actor?.name?.charAt(0) || 'U'}</div>
@@ -77,7 +79,7 @@ export function NotificationBell() {
                           <span className="font-semibold">{notif.actor?.name || 'A user'}</span> {notif.content}
                         </p>
                         {notif.idea?.title && (
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 truncate">"{notif.idea.title}"</p>
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 truncate">&quot;{notif.idea.title}&quot;</p>
                         )}
                         <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1 uppercase tracking-wider">
                           {new Date(notif.createdAt).toLocaleDateString()}

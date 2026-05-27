@@ -29,10 +29,10 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
   }
 
   return (
-    <main className="max-w-6xl mx-auto py-8 px-4 h-[calc(100vh-140px)] flex flex-col">
+    <main className="max-w-6xl mx-auto py-4 sm:py-8 px-4 h-[calc(100dvh-120px)] sm:h-[calc(100vh-140px)] flex flex-col">
        <div className="mb-6">
-         <h1 className="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">Co-founder Inbox</h1>
-         <p className="text-zinc-500 dark:text-zinc-400">Collaborate with developers building solutions.</p>
+         <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">Co-founder Inbox</h1>
+         <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Collaborate with developers building solutions.</p>
        </div>
        <div className="flex-1 bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden flex flex-col md:flex-row min-h-0">
           <InboxView 

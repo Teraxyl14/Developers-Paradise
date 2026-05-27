@@ -94,7 +94,7 @@ export default async function RootLayout({
                         <div className="w-6 h-6 rounded-md overflow-hidden border border-border-default">
                           <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
                         </div>
-                        <span className="font-bold text-text-primary font-display">Developer's Paradise</span>
+                        <span className="font-bold text-text-primary font-display">Developer&apos;s Paradise</span>
                       </div>
                       <p className="text-sm text-text-muted leading-relaxed max-w-xs">
                         AI-powered developer problem discovery platform. Find validated problems, build what matters.
@@ -118,7 +118,7 @@ export default async function RootLayout({
                     </div>
                   </div>
                   <div className="border-t border-border-default pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-text-muted">
-                    <span>&copy; {new Date().getFullYear()} Developer's Paradise. All rights reserved.</span>
+                    <span>&copy; {new Date().getFullYear()} Developer&apos;s Paradise. All rights reserved.</span>
                     <span className="flex items-center gap-1.5">Built with <span className="font-medium text-text-secondary">Next.js</span> + <span className="font-medium text-text-secondary">Gemini AI</span></span>
                   </div>
                 </div>

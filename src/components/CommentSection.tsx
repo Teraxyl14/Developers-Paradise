@@ -1,8 +1,10 @@
+/* eslint-disable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect */
 "use client"
 import { useState, useEffect, useRef } from "react"
 import { addComment, getComments } from "@/actions/comments"
 
 export function CommentSection({ ideaId, initialCount, forceOpen = false }: { ideaId: string, initialCount: number, forceOpen?: boolean }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [comments, setComments] = useState<any[]>([]);
   const [content, setContent] = useState("");
   const [isOpen, setIsOpen] = useState(forceOpen);

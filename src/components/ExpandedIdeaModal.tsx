@@ -7,12 +7,15 @@ import { useState } from "react"
 
 import { useRouter } from "next/navigation"
 import { useTransition } from "react"
+import { useSession, signIn } from "next-auth/react"
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ExpandedIdeaModal({ idea, onClose }: { idea: any, onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<"details" | "discussion">("details");
   const [comment, setComment] = useState("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const { data: session } = useSession();
   const isUpvoted = idea.upvotes?.length > 0;
   const isWaitlisted = idea.waitlist?.length > 0;
 
@@ -25,6 +28,10 @@ export function ExpandedIdeaModal({ idea, onClose }: { idea: any, onClose: () =>
   }, [onClose])
 
   const handleUpvote = async () => {
+    if (!session) {
+      signIn();
+      return;
+    }
     startTransition(async () => {
       try {
         await upvoteIdea(idea.id);
@@ -36,6 +43,10 @@ export function ExpandedIdeaModal({ idea, onClose }: { idea: any, onClose: () =>
   };
 
   const handleWaitlist = async () => {
+    if (!session) {
+      signIn();
+      return;
+    }
     startTransition(async () => {
       try {
         await toggleWaitlist(idea.id);
@@ -48,6 +59,10 @@ export function ExpandedIdeaModal({ idea, onClose }: { idea: any, onClose: () =>
 
   const handleComment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!session) {
+      signIn();
+      return;
+    }
     if (!comment.trim()) return;
     startTransition(async () => {
       try {
@@ -72,13 +87,13 @@ export function ExpandedIdeaModal({ idea, onClose }: { idea: any, onClose: () =>
         onClick={onClose}
       />
       
-      <div className="w-full min-h-screen py-6 px-4 md:py-12 flex items-center justify-center">
+      <div className="w-full min-h-screen py-4 px-3 sm:py-6 sm:px-4 md:py-12 flex items-start sm:items-center justify-center">
         <motion.div 
           layoutId={`card-${idea.id}`}
-          className="relative w-full max-w-3xl bg-white/5 dark:bg-zinc-950/60 border border-white/10 dark:border-white/5 backdrop-blur-2xl rounded-[2rem] pointer-events-auto shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden"
+          className="relative w-full max-w-3xl bg-white/5 dark:bg-zinc-950/60 border border-white/10 dark:border-white/5 backdrop-blur-2xl rounded-2xl sm:rounded-[2rem] pointer-events-auto shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden max-h-[90dvh] sm:max-h-none"
         >
           {/* Header / Tabs */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5 backdrop-blur-xl sticky top-0 z-20">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 bg-white/5 backdrop-blur-xl sticky top-0 z-20">
             <div className="flex gap-2">
               <button 
                 onClick={() => setActiveTab("details")}
@@ -110,7 +125,7 @@ export function ExpandedIdeaModal({ idea, onClose }: { idea: any, onClose: () =>
             </button>
           </div>
 
-          <div className="p-6 md:p-10">
+          <div className="p-4 sm:p-6 md:p-10 overflow-y-auto">
             {activeTab === "details" ? (
               <div className="flex flex-col gap-8">
                 <div className="flex flex-col md:flex-row md:items-start gap-6">
@@ -194,14 +209,15 @@ export function ExpandedIdeaModal({ idea, onClose }: { idea: any, onClose: () =>
                 <form onSubmit={handleComment} className="flex gap-3">
                   <input 
                     id="comment-input"
-                    autoFocus
+                    autoFocus={!!session}
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder="Share your thoughts..."
-                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all outline-none"
+                    placeholder={session ? "Share your thoughts..." : "Sign in to join the discussion"}
+                    disabled={!session}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
-                  <button type="submit" className="px-6 py-3 bg-accent hover:bg-accent-hover text-white font-black rounded-xl transition-all active:scale-95">
-                    Post
+                  <button type="submit" disabled={!session} className="px-6 py-3 bg-accent hover:bg-accent-hover text-white font-black rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {session ? "Post" : "Sign In"}
                   </button>
                 </form>
 
@@ -211,6 +227,7 @@ export function ExpandedIdeaModal({ idea, onClose }: { idea: any, onClose: () =>
                       No comments yet.
                     </div>
                   ) : (
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     idea.comments?.map((c: any) => (
                       <div key={c.id} className="bg-white/5 p-4 rounded-2xl border border-white/10 hover:border-accent/20 transition-all">
                         <div className="flex items-center gap-2 mb-2">

@@ -61,7 +61,7 @@ export default async function AdminPage() {
   ];
 
   return (
-    <main className="max-w-6xl mx-auto py-12 px-4 md:px-6">
+    <main className="max-w-6xl mx-auto py-8 sm:py-12 px-4 md:px-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-10">
         <div className="flex items-center gap-4">
@@ -69,20 +69,16 @@ export default async function AdminPage() {
             <Shield className="w-7 h-7 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">Admin Dashboard</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">Admin Dashboard</h1>
             <p className="text-zinc-500 dark:text-zinc-400 text-sm">Signed in as <strong className="text-zinc-700 dark:text-zinc-300">{session.user.email}</strong></p>
           </div>
-        </div>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20">
-          <Activity className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">System Online</span>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-10">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-10">
         {stats.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white dark:bg-zinc-900/50 p-5 rounded-2xl border border-zinc-200 dark:border-white/[0.06] shadow-sm">
+          <div key={label} className="bg-white dark:bg-zinc-900/50 p-4 sm:p-5 rounded-2xl border border-zinc-200 dark:border-white/[0.06] shadow-sm">
             <div className={`inline-flex items-center justify-center w-9 h-9 rounded-xl ${bg} border mb-3`}>
               <Icon className={`w-4 h-4 ${color}`} />
             </div>

@@ -219,3 +219,28 @@ main { animation: fadeInUp 0.35s ease-out; }
 .bg-gradient-radial {
   background-image: radial-gradient(var(--tw-gradient-stops));
 }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE SCALING
+   ═══════════════════════════════════════ */
+
+/* Phone: tighten paddings, reduce font weights */
+@media (max-width: 480px) {
+  .liquid-glass {
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+  }
+}
+
+/* Ultrawide / TV: use wider containers, more breathing room */
+@media (min-width: 1920px) {
+  .max-w-5xl { max-width: 72rem; }
+  .max-w-6xl { max-width: 84rem; }
+}
+
+/* 4K+ screens: even wider */
+@media (min-width: 2560px) {
+  .max-w-5xl { max-width: 80rem; }
+  .max-w-6xl { max-width: 96rem; }
+}
+

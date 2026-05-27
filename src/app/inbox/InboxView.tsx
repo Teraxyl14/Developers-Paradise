@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import { useState, useTransition, useRef, useEffect } from "react"
 import { sendMessage } from "@/actions/messages"
@@ -68,6 +69,7 @@ export function InboxView({ initialMessages, currentUserId, defaultContact, defa
 
      // Optimistic update
      const optMsg = {
+        // eslint-disable-next-line react-hooks/purity
         id: 'temp-' + Date.now(),
         senderId: currentUserId,
         receiverId: activeContactId,
@@ -87,7 +89,7 @@ export function InboxView({ initialMessages, currentUserId, defaultContact, defa
 
   return (
     <>
-      <div className="w-full md:w-1/3 border-r border-zinc-200 dark:border-white/10 flex flex-col h-full bg-zinc-50/50 dark:bg-transparent">
+      <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-white/10 flex flex-col max-h-[35vh] md:max-h-none md:h-full bg-zinc-50/50 dark:bg-transparent">
          <div className="p-4 border-b border-zinc-200 dark:border-white/10 font-semibold text-zinc-900 dark:text-white bg-white dark:bg-zinc-900/50">
              Conversations
          </div>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
@@ -11,7 +12,14 @@ interface VectorSearchHit {
   similarity: number;
 }
 
-export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'latest', searchQuery: string = '', page: number = 1, limit: number = 10) {
+export async function getIdeas(
+  sortBy: 'latest' | 'trending' | 'contrarian' = 'latest',
+  searchQuery: string = '',
+  page: number = 1,
+  limit: number = 10,
+  difficulty?: string,
+  domain?: string
+) {
   const session = await auth();
   
   // 1. Standard Keyword Search Clause
@@ -23,10 +31,21 @@ export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'l
     ]
   } : {};
 
+  // Build filter clause
+  const filterClause: any = {};
+  if (difficulty && difficulty !== 'All') {
+    filterClause.difficulty = difficulty;
+  }
+  if (domain && domain !== 'All') {
+    filterClause.domain = domain;
+  }
+
   // For Contrarian sort, we ONLY want ideas with 0 repositories linked, but ideally some saves/upvotes.
-  const baseWhere = sortBy === 'contrarian' 
-    ? { ...keywordWhereClause, repositories: { none: {} } } 
-    : keywordWhereClause;
+  const baseWhere = {
+    ...keywordWhereClause,
+    ...filterClause,
+    ...(sortBy === 'contrarian' ? { repositories: { none: {} } } : {})
+  };
 
   const orderByLogic = sortBy === 'trending' ? { upvotes: { _count: 'desc' as const } } 
                    : sortBy === 'contrarian' ? { savedBy: { _count: 'desc' as const } }
@@ -48,24 +67,49 @@ export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'l
       if (embeddingResult && embeddingResult.length === 3072) {
           const formattedEmbedding = `[${embeddingResult.join(',')}]`;
           
-          // Execute both searches in parallel for maximum speed
-          const [rawVectorResults, keywordResults] = await Promise.all([
-             // Vector Dense Search
-             prisma.$queryRaw<VectorSearchHit[]>`
+          // Execute vector search with active filters incorporated directly in SQL
+          let rawVectorResults;
+          if (difficulty && difficulty !== 'All' && domain && domain !== 'All') {
+             rawVectorResults = await prisma.$queryRaw<VectorSearchHit[]>`
+                SELECT id, 1 - (embedding <=> ${formattedEmbedding}::vector) as similarity
+                FROM "Idea"
+                WHERE embedding IS NOT NULL AND difficulty = ${difficulty} AND domain = ${domain}
+                ORDER BY similarity DESC
+                LIMIT 50;
+             `;
+          } else if (difficulty && difficulty !== 'All') {
+             rawVectorResults = await prisma.$queryRaw<VectorSearchHit[]>`
+                SELECT id, 1 - (embedding <=> ${formattedEmbedding}::vector) as similarity
+                FROM "Idea"
+                WHERE embedding IS NOT NULL AND difficulty = ${difficulty}
+                ORDER BY similarity DESC
+                LIMIT 50;
+             `;
+          } else if (domain && domain !== 'All') {
+             rawVectorResults = await prisma.$queryRaw<VectorSearchHit[]>`
+                SELECT id, 1 - (embedding <=> ${formattedEmbedding}::vector) as similarity
+                FROM "Idea"
+                WHERE embedding IS NOT NULL AND domain = ${domain}
+                ORDER BY similarity DESC
+                LIMIT 50;
+             `;
+          } else {
+             rawVectorResults = await prisma.$queryRaw<VectorSearchHit[]>`
                 SELECT id, 1 - (embedding <=> ${formattedEmbedding}::vector) as similarity
                 FROM "Idea"
                 WHERE embedding IS NOT NULL
                 ORDER BY similarity DESC
                 LIMIT 50;
-             `,
-             // Keyword Sparse Search
-             prisma.idea.findMany({
-                where: baseWhere,
-                select: { id: true },
-                orderBy: orderByLogic,
-                take: 50
-             })
-          ]);
+             `;
+          }
+
+          // Keyword Sparse Search
+          const keywordResults = await prisma.idea.findMany({
+             where: baseWhere,
+             select: { id: true },
+             orderBy: orderByLogic,
+             take: 50
+          });
 
           // Reciprocal Rank Fusion (RRF) Algorithm
           const rrfScores = new Map<string, number>();
@@ -92,7 +136,10 @@ export async function getIdeas(sortBy: 'latest' | 'trending' | 'contrarian' = 'l
           if (paginatedIds.length > 0) {
              // Fetch full objects holding relational data for the winners
              const populatedIdeas = await prisma.idea.findMany({
-                where: { id: { in: paginatedIds } },
+                where: { 
+                   id: { in: paginatedIds },
+                   ...filterClause
+                },
                 include: {
                   tags: { include: { tag: true } },
                   savedBy: session?.user?.id ? { where: { userId: session.user.id } } : undefined,

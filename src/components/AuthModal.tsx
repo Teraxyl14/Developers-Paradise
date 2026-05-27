@@ -1,5 +1,6 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client"
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { signIn, useSession } from 'next-auth/react'
 import { X, Mail, Lock, User, Loader2 } from 'lucide-react'
@@ -36,6 +37,14 @@ export function AuthModal() {
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [status])
 
+  const close = useCallback(() => {
+    setIsOpen(false)
+    if (window.location.hash === '#login') {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
+    }
+  }, [])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -44,15 +53,7 @@ export function AuthModal() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen])
-
-  const close = () => {
-    setIsOpen(false)
-    if (window.location.hash === '#login') {
-      window.history.replaceState(null, '', window.location.pathname + window.location.search)
-      window.dispatchEvent(new HashChangeEvent('hashchange'))
-    }
-  }
+  }, [isOpen, close])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -115,7 +116,7 @@ export function AuthModal() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="relative z-10 w-full max-w-md bg-zinc-950/80 backdrop-blur-2xl border border-white/10 p-8 rounded-3xl shadow-2xl overflow-hidden"
+            className="relative z-10 w-full max-w-md bg-zinc-950/80 backdrop-blur-2xl border border-white/10 p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden"
           >
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent to-danger" />
             

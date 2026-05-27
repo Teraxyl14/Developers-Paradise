@@ -6,9 +6,9 @@ const { auth } = NextAuth(authConfig);
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
-  const isProtectedRoute = pathname.startsWith('/profile') || pathname.startsWith('/submit') || pathname.startsWith('/inbox');
+  const isPublicRoute = pathname === '/' || pathname === '/dashboard' || pathname.startsWith('/api/auth') || pathname.startsWith('/idea');
 
-  if (isProtectedRoute && !isLoggedIn) {
+  if (!isPublicRoute && !isLoggedIn) {
     const signInUrl = new URL('/api/auth/signin', req.nextUrl);
     signInUrl.searchParams.set('callbackUrl', pathname);
     return Response.redirect(signInUrl);
