@@ -1,0 +1,17 @@
+[project]
+name = "dp-edge-extractor"
+version = "1.0.0"
+requires-python = ">=3.12"
+dependencies = [
+    "curl-cffi>=0.7.1",
+    "playwright>=1.49.0",
+    "playwright-stealth>=1.0.6",
+    "ghost-cursor-playwright>=0.2.0",
+    "temporalio>=1.9.0",
+    "redis[hiredis]>=5.2.0",
+    "pydantic-settings>=2.7.0",
+    "beautifulsoup4>=4.12.3",
+    "lxml>=5.3.0",
+    "python-dotenv>=1.0.1",
+    "structlog>=24.4.0",
+]
