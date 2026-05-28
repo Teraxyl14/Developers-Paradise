@@ -47,7 +47,7 @@ class ExtractionWorkflow:
             session_ctx = None
             
             # Stage 1: Icebreaker (if WAF is present)
-            if config.waf_type in ["cloudflare", "datadome"]:
+            if config.waf_type in ["cloudflare", "datadome", "akamai"]:
                 try:
                     # We pass the workflow ID as the session ID to maintain proxy stickiness
                     session_ctx = await workflow.execute_activity(
