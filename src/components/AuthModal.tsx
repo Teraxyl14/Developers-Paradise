@@ -19,29 +19,66 @@ export function AuthModal() {
   useEffect(() => {
     if (status === 'authenticated') {
       setIsOpen(false)
+      let newUrl = window.location.pathname
+      const params = new URLSearchParams(window.location.search)
+      if (params.has('login')) {
+        params.delete('login')
+        params.delete('callbackUrl')
+      }
+      const queryString = params.toString()
+      if (queryString) {
+        newUrl += '?' + queryString
+      }
       if (window.location.hash === '#login') {
-        window.history.replaceState(null, '', window.location.pathname + window.location.search)
+        window.history.replaceState(null, '', newUrl)
         window.dispatchEvent(new HashChangeEvent('hashchange'))
+      } else {
+        window.history.replaceState(null, '', newUrl)
       }
       return
     }
 
-    const handleHashChange = () => {
-      setIsOpen(window.location.hash === '#login')
+    const handleUrlChange = () => {
+      const hasHash = window.location.hash === '#login'
+      const hasQuery = new URLSearchParams(window.location.search).get('login') === 'true'
+      setIsOpen(hasHash || hasQuery)
     }
     
-    // Check initial
-    handleHashChange()
+    handleUrlChange()
     
-    window.addEventListener('hashchange', handleHashChange)
-    return () => window.removeEventListener('hashchange', handleHashChange)
+    window.addEventListener('hashchange', handleUrlChange)
+    window.addEventListener('popstate', handleUrlChange)
+    
+    // Periodically poll for URL query updates (client-side Next.js route transitions)
+    const interval = setInterval(handleUrlChange, 500)
+    
+    return () => {
+      window.removeEventListener('hashchange', handleUrlChange)
+      window.removeEventListener('popstate', handleUrlChange)
+      clearInterval(interval)
+    }
   }, [status])
 
   const close = useCallback(() => {
     setIsOpen(false)
+    let newUrl = window.location.pathname
+    
+    const params = new URLSearchParams(window.location.search)
+    if (params.has('login')) {
+      params.delete('login')
+      params.delete('callbackUrl')
+    }
+    
+    const queryString = params.toString()
+    if (queryString) {
+      newUrl += '?' + queryString
+    }
+    
     if (window.location.hash === '#login') {
-      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+      window.history.replaceState(null, '', newUrl)
       window.dispatchEvent(new HashChangeEvent('hashchange'))
+    } else {
+      window.history.replaceState(null, '', newUrl)
     }
   }, [])
 

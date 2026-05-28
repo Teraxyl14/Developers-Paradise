@@ -69,7 +69,19 @@ export function DashboardFeed({
   const router = useRouter();
   const [activeIdeaId, setActiveIdeaId] = useState<string | null>(initialExpandedIdeaId || null);
   
-  
+  // Smooth scroll centered on the expanded card
+  useEffect(() => {
+    if (activeIdeaId) {
+      const timer = setTimeout(() => {
+        const element = document.getElementById(`idea-card-${activeIdeaId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 350); // wait for framer-motion layout to update height
+      return () => clearTimeout(timer);
+    }
+  }, [activeIdeaId]);
+
   // Custom dropdown states
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [domainSearch, setDomainSearch] = useState("");
@@ -354,8 +366,13 @@ export function DashboardFeed({
           <motion.div 
             key={idea.id}
             variants={itemVariants}
+            layout="position"
           >
-             <IdeaCard idea={idea} onClick={() => setActiveIdeaId(idea.id)} />
+             <IdeaCard 
+               idea={idea} 
+               isExpanded={activeIdeaId === idea.id} 
+               onToggle={() => setActiveIdeaId(activeIdeaId === idea.id ? null : idea.id)} 
+             />
           </motion.div>
         ))}
         
@@ -373,12 +390,6 @@ export function DashboardFeed({
            </div>
         )}
       </motion.div>
-
-      <AnimatePresence>
-        {activeIdeaId && (
-          <ExpandedIdeaModal idea={ideas.find(i => i.id === activeIdeaId)} onClose={() => setActiveIdeaId(null)} />
-        )}
-      </AnimatePresence>
 
       {/* Numbered Premium Pagination System */}
       {totalPages > 1 && (

@@ -1,10 +1,8 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { IdeaCard } from "@/components/IdeaCard"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { Settings, Lightbulb, Bookmark, GitBranch, ArrowUpRight } from "lucide-react"
-import { ExpandedIdeaModal } from "@/components/ExpandedIdeaModal"
-import { AnimatePresence } from "framer-motion"
 
 const tabs = [
   { key: "ideas", label: "Posts", icon: Lightbulb },
@@ -40,17 +38,30 @@ export function ProfileTabs({ editForm, submittedIdeas, savedIdeas, repositories
   savedIdeas: ProfileIdea[],
   repositories: ProfileRepository[]
 }) {
-  // Default to "ideas" (Posts) to instantly load content like Reddit does!
+  // Default to loading user ideas/posts on initial render
   const [active, setActive] = useState("ideas");
   const [activeIdeaId, setActiveIdeaId] = useState<string | null>(null);
+  
+  // Smooth scroll centered on the expanded card inside profile
+  useEffect(() => {
+    if (activeIdeaId) {
+      const timer = setTimeout(() => {
+        const element = document.getElementById(`idea-card-${activeIdeaId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [activeIdeaId]);
   
   const allIdeas = [...submittedIdeas, ...savedIdeas];
   const activeIdea = allIdeas.find(i => i.id === activeIdeaId);
 
   return (
     <div className="space-y-5">
-      {/* Reddit-style Tab Navigation Header */}
-      <div className="flex gap-1.5 bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/10 rounded-2xl p-1 shadow-sm overflow-x-auto">
+      {/* Premium Glass Tab Navigation Header */}
+      <div className="flex gap-1.5 bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 rounded-2xl p-1 shadow-sm overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -64,7 +75,7 @@ export function ProfileTabs({ editForm, submittedIdeas, savedIdeas, repositories
             {active === tab.key && (
               <motion.div 
                 layoutId="profile-tab-pill" 
-                className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200/50 dark:border-white/[0.08] shadow-sm rounded-xl -z-10" 
+                className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200/50 dark:border-white/[0.08] shadow-sm rounded-xl -z-10" 
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}
@@ -103,7 +114,12 @@ export function ProfileTabs({ editForm, submittedIdeas, savedIdeas, repositories
               </div>
             )}
             {submittedIdeas.map((idea) => (
-              <IdeaCard key={idea.id} idea={idea} onClick={() => setActiveIdeaId(idea.id)} />
+              <IdeaCard 
+                key={idea.id} 
+                idea={idea} 
+                isExpanded={activeIdeaId === idea.id} 
+                onToggle={() => setActiveIdeaId(activeIdeaId === idea.id ? null : idea.id)} 
+              />
             ))}
           </motion.div>
         )}
@@ -124,7 +140,12 @@ export function ProfileTabs({ editForm, submittedIdeas, savedIdeas, repositories
               </div>
             )}
             {savedIdeas.map((idea) => (
-              <IdeaCard key={idea.id} idea={idea} onClick={() => setActiveIdeaId(idea.id)} />
+              <IdeaCard 
+                key={idea.id} 
+                idea={idea} 
+                isExpanded={activeIdeaId === idea.id} 
+                onToggle={() => setActiveIdeaId(activeIdeaId === idea.id ? null : idea.id)} 
+              />
             ))}
           </motion.div>
         )}
@@ -157,13 +178,6 @@ export function ProfileTabs({ editForm, submittedIdeas, savedIdeas, repositories
           </motion.div>
         )}
       </div>
-
-      {/* Expanded Modal Integration */}
-      <AnimatePresence>
-        {activeIdeaId && activeIdea && (
-          <ExpandedIdeaModal idea={activeIdea} onClose={() => setActiveIdeaId(null)} />
-        )}
-      </AnimatePresence>
     </div>
   )
 }

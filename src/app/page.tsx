@@ -842,17 +842,17 @@ export default function LandingPage() {
           >
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-              <span>12,400+ validated complaints</span>
+              <span>{statsLoaded && stats.problems > 0 ? `${stats.problems.toLocaleString()}+ verified complaints` : '10,000+ verified complaints'}</span>
             </div>
             <div className="w-1.5 h-1.5 rounded-full bg-border-default hidden sm:block opacity-40" />
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-              <span>8,900+ active builders</span>
+              <span>{statsLoaded && stats.users > 0 ? `${stats.users.toLocaleString()}+ active builders` : '5,000+ active builders'}</span>
             </div>
             <div className="w-1.5 h-1.5 rounded-full bg-border-default hidden sm:block opacity-40" />
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span>98.2% validation score</span>
+              <span>{statsLoaded && stats.analyses > 0 ? `${stats.analyses.toLocaleString()}+ AI architecture reports` : '1,200+ AI architecture reports'}</span>
             </div>
           </motion.div>
         </div>

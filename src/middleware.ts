@@ -9,7 +9,8 @@ export default auth((req) => {
   const isPublicRoute = pathname === '/' || pathname === '/dashboard' || pathname.startsWith('/api/auth') || pathname.startsWith('/idea');
 
   if (!isPublicRoute && !isLoggedIn) {
-    const signInUrl = new URL('/api/auth/signin', req.nextUrl);
+    const signInUrl = new URL('/dashboard', req.nextUrl);
+    signInUrl.searchParams.set('login', 'true');
     signInUrl.searchParams.set('callbackUrl', pathname);
     return Response.redirect(signInUrl);
   }
