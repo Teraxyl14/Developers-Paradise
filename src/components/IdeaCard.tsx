@@ -2,7 +2,7 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronUp, MessageSquare, Clock, X, ExternalLink, HandMetal, ChevronDown, PlusCircle } from "lucide-react"
 import { upvoteIdea, toggleWaitlist, addComment } from "@/actions/interactions"
-import { useState, useTransition } from "react"
+import { useState, useTransition, useOptimistic } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 
@@ -12,8 +12,28 @@ export function IdeaCard({ idea, isExpanded, onToggle }: { idea: any, isExpanded
   const [comment, setComment] = useState("");
   const router = useRouter();
   const { data: session } = useSession();
-  const isUpvoted = idea.upvotes?.length > 0;
-  const isWaitlisted = idea.waitlist?.length > 0;
+  
+  const isUpvotedInitial = idea.upvotes?.length > 0;
+  const isWaitlistedInitial = idea.waitlist?.length > 0;
+  const upvoteCountInitial = idea._count?.upvotes || 0;
+  
+  const [optimisticUpvote, addOptimisticUpvote] = useOptimistic(
+    { isUpvoted: isUpvotedInitial, count: upvoteCountInitial },
+    (state, newIsUpvoted: boolean) => ({
+      isUpvoted: newIsUpvoted,
+      count: state.isUpvoted === newIsUpvoted ? state.count : newIsUpvoted ? state.count + 1 : state.count - 1
+    })
+  );
+
+  const [optimisticWaitlist, addOptimisticWaitlist] = useOptimistic(
+    isWaitlistedInitial,
+    (state, newIsWaitlisted: boolean) => newIsWaitlisted
+  );
+
+  const [optimisticComments, addOptimisticComment] = useOptimistic(
+    idea.comments || [],
+    (state, newComment: any) => [newComment, ...state]
+  );
 
   const handleUpvote = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -22,9 +42,9 @@ export function IdeaCard({ idea, isExpanded, onToggle }: { idea: any, isExpanded
       return;
     }
     startTransition(async () => {
+      addOptimisticUpvote(!optimisticUpvote.isUpvoted);
       try {
         await upvoteIdea(idea.id);
-        router.refresh();
       } catch (error) {
         console.error("Failed to upvote", error);
       }
@@ -38,9 +58,9 @@ export function IdeaCard({ idea, isExpanded, onToggle }: { idea: any, isExpanded
       return;
     }
     startTransition(async () => {
+      addOptimisticWaitlist(!optimisticWaitlist);
       try {
         await toggleWaitlist(idea.id);
-        router.refresh();
       } catch (error) {
         console.error("Failed to join waitlist", error);
       }
@@ -54,11 +74,20 @@ export function IdeaCard({ idea, isExpanded, onToggle }: { idea: any, isExpanded
       return;
     }
     if (!comment.trim()) return;
+    
+    const newComment = {
+      id: Math.random().toString(),
+      content: comment,
+      createdAt: new Date().toISOString(),
+      user: { name: session.user?.name || "You", image: session.user?.image }
+    };
+
     startTransition(async () => {
+      addOptimisticComment(newComment);
+      const commentText = comment;
+      setComment("");
       try {
-        await addComment(idea.id, comment);
-        setComment("");
-        router.refresh();
+        await addComment(idea.id, commentText);
       } catch (error) {
         console.error("Failed to add comment", error);
       }
@@ -87,14 +116,14 @@ export function IdeaCard({ idea, isExpanded, onToggle }: { idea: any, isExpanded
         <div className="flex flex-col items-center shrink-0">
           <button
             onClick={handleUpvote}
-            className={`flex flex-col items-center justify-center w-11 h-14 rounded-xl border transition-all duration-300 ${isUpvoted
+            className={`flex flex-col items-center justify-center w-11 h-14 rounded-xl border transition-all duration-300 ${optimisticUpvote.isUpvoted
                 ? "bg-accent/20 border-accent/40 text-accent shadow-[inset_0_0_12px_rgba(99,102,241,0.15)]"
                 : "bg-white/5 dark:bg-zinc-900/40 border-border-default/80 dark:border-white/5 hover:bg-accent/10 hover:border-accent/20 text-text-muted hover:text-accent"
               } ${isPending ? "opacity-70 grayscale" : ""}`}
             disabled={isPending}
           >
-            <ChevronUp className={`w-5 h-5 transition-transform duration-300 ${isUpvoted ? "translate-y-[-1px] scale-110" : "group-hover/upvote:-translate-y-0.5"}`} />
-            <span className={`text-xs font-mono font-bold mt-0.5 ${isUpvoted ? "text-accent" : "text-text-secondary"}`}>{idea._count?.upvotes || 0}</span>
+            <ChevronUp className={`w-5 h-5 transition-transform duration-300 ${optimisticUpvote.isUpvoted ? "translate-y-[-1px] scale-110" : "group-hover/upvote:-translate-y-0.5"}`} />
+            <span className={`text-xs font-mono font-bold mt-0.5 ${optimisticUpvote.isUpvoted ? "text-accent" : "text-text-secondary"}`}>{optimisticUpvote.count}</span>
           </button>
         </div>
 
@@ -197,13 +226,13 @@ export function IdeaCard({ idea, isExpanded, onToggle }: { idea: any, isExpanded
               <button 
                 onClick={handleWaitlist}
                 className={`flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs font-black transition-all duration-300 active:scale-95 border ${
-                  isWaitlisted 
+                  optimisticWaitlist 
                     ? "bg-green-500/20 border-green-500/40 text-green-400" 
                     : "bg-white/5 border-white/10 text-text-primary hover:bg-white/10"
                 } ${isPending ? "opacity-70 grayscale" : ""}`}
                 disabled={isPending}
               >
-                {isWaitlisted ? "You are on the Waitlist" : "Join Developer Waitlist"} <HandMetal className="w-4 h-4" />
+                {optimisticWaitlist ? "You are on the Waitlist" : "Join Developer Waitlist"} <HandMetal className="w-4 h-4" />
               </button>
             </div>
 
@@ -234,13 +263,13 @@ export function IdeaCard({ idea, isExpanded, onToggle }: { idea: any, isExpanded
 
               {/* Comments Feed list */}
               <div className="space-y-3.5 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
-                {idea.comments?.length === 0 ? (
+                {optimisticComments.length === 0 ? (
                   <div className="text-center py-8 text-text-muted text-xs border border-dashed border-white/10 rounded-xl bg-white/[0.01]">
                     No compiler complaints yet. Add yours above!
                   </div>
                 ) : (
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  idea.comments?.map((c: any) => (
+                  optimisticComments.map((c: any) => (
                     <div key={c.id} className="bg-white/[0.02] dark:bg-zinc-900/10 p-3.5 rounded-xl border border-white/5 transition-all text-left">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-6.5 h-6.5 rounded-md bg-accent/10 border border-accent/20 flex items-center justify-center text-[9px] font-black text-accent">

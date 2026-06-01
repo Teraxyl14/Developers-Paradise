@@ -15,28 +15,30 @@ export default async function DashboardPage(props: {
   const domain = searchParams?.domain || 'All';
   const initialExpandedIdeaId = searchParams?.ideaId || null;
 
-  // 1. Fetch ideas from the server with active database-level filters
-  const { ideas, totalPages } = await getIdeas(sortBy, query, page, 10, difficulty, domain);
-
-  // 2. Fetch all unique domains and their counts dynamically
-  const domainsData = await prisma.idea.groupBy({
-    by: ['domain'],
-    _count: { domain: true },
-    orderBy: { domain: 'asc' }
-  });
+  // Execute all heavy database queries concurrently to reduce server render time
+  const [
+    { ideas, totalPages },
+    domainsData,
+    difficultyCountsData,
+    totalIdeasCount
+  ] = await Promise.all([
+    getIdeas(sortBy, query, page, 10, difficulty, domain),
+    prisma.idea.groupBy({
+      by: ['domain'],
+      _count: { domain: true },
+      orderBy: { domain: 'asc' }
+    }),
+    prisma.idea.groupBy({
+      by: ['difficulty'],
+      _count: { id: true }
+    }),
+    prisma.idea.count()
+  ]);
 
   const allDomains = domainsData.map(d => ({
     name: d.domain,
     count: d._count.domain
   }));
-
-  // 3. Fetch difficulty counts dynamically for the segment control
-  const difficultyCountsData = await prisma.idea.groupBy({
-    by: ['difficulty'],
-    _count: { id: true }
-  });
-
-  const totalIdeasCount = await prisma.idea.count();
   const difficultyCounts = {
     All: totalIdeasCount,
     Beginner: difficultyCountsData.find(d => d.difficulty === 'Beginner')?._count.id || 0,
