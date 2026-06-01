@@ -32,6 +32,9 @@ export const metadata: Metadata = {
     ],
   },
   manifest: '/site.webmanifest',
+  verification: {
+    google: "peghQYHF0xrKjxHWqvCJKet2t_pIFq1sxO1kF1-xZsg",
+  },
 };
 
 export default async function RootLayout({
@@ -69,7 +72,7 @@ export default async function RootLayout({
                       {isAdmin && <NavLink href="/admin" icon="shield">Admin</NavLink>}
                     </nav>
                   </div>
-                  
+
                   <div className="flex items-center gap-1.5">
                     {session?.user && <NotificationBell />}
                     <ThemeToggle />
