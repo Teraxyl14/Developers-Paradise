@@ -4,8 +4,18 @@ import { authConfig } from "./auth.config"
 const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
-  const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
+
+  // Early-exit guardrail: Immediately exit execution for sitemaps, robots, or XML requests
+  if (
+    pathname.includes('sitemap') ||
+    pathname.endsWith('.xml') ||
+    pathname === '/robots.txt'
+  ) {
+    return;
+  }
+
+  const isLoggedIn = !!req.auth;
   const isPublicRoute = pathname === '/' || pathname === '/dashboard' || pathname.startsWith('/api/auth') || pathname.startsWith('/idea');
 
   if (!isPublicRoute && !isLoggedIn) {
