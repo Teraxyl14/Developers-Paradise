@@ -1,0 +1,4 @@
+# Ignore backend/python scripts to avoid bloating Vercel builds and prevent deploy failures
+ingestion/
+ingestion/edge/
+ingestion/legacy/

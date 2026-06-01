@@ -1,0 +1,73 @@
+name: Deploy Cloud OSINT Edge Extractor
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ingestion/edge/**'
+      - '.github/workflows/deploy-edge-extractor.yml'
+  workflow_dispatch:
+
+jobs:
+  lint-and-test:
+    name: Lint & Type-Check Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Linting Tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install mypy ruff lxml
+
+      - name: Run Ruff Linter
+        run: ruff check ingestion/edge/
+
+      - name: Run Mypy Type-Checker
+        run: mypy ingestion/edge/ --ignore-missing-imports
+
+  deploy-to-vps:
+    name: Deploy to Cloud VPS
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy Code & Restart Service via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            echo "Stopping Temporal Extractor workers..."
+            sudo systemctl stop dp-edge-extractor.service || true
+
+            echo "Updating repository code..."
+            cd /opt/developers-paradise
+            git fetch origin main
+            git checkout main
+            git pull origin main
+
+            echo "Upgrading Python dependencies..."
+            cd ingestion/edge
+            python3 -m venv .venv
+            source .venv/bin/activate
+            pip install --upgrade pip
+            pip install .
+
+            echo "Ensuring Playwright browser binaries are present..."
+            playwright install chromium
+
+            echo "Restarting Extractor workers..."
+            sudo systemctl restart dp-edge-extractor.service
+            sudo systemctl status dp-edge-extractor.service

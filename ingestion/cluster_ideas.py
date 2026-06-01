@@ -38,7 +38,7 @@ def generate_cluster_summary(titles):
     """
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-pro',
+            model='gemini-3.5-flash',
             contents=prompt,
         )
         return response.text.strip().replace('"', '')

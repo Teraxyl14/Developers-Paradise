@@ -113,7 +113,7 @@ class Extractor:
         return all_results
 
     async def close(self):
-        self.session.close()
+        await self.session.close()
 
     async def __aenter__(self):
         return self

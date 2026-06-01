@@ -41,7 +41,7 @@ class SchedulerWorkflow:
             args=[config],
             id=wf_id,
             parent_close_policy=workflow.ParentClosePolicy.ABANDON,
-            workflow_execution_timeout=timedelta(days=365)
+            execution_timeout=timedelta(days=365)
         )
 
     @workflow.signal
@@ -98,7 +98,7 @@ class SchedulerWorkflow:
                 args=[target],
                 id=wf_id,
                 parent_close_policy=workflow.ParentClosePolicy.ABANDON,
-                workflow_execution_timeout=timedelta(days=365)
+                execution_timeout=timedelta(days=365)
             )
 
         self.iteration_count += 1

@@ -2,7 +2,7 @@ import datetime
 from typing import List, Dict, Any
 from temporalio import activity
 
-from ingestion.edge.queue.redis_broker import RedisBroker
+from ingestion.edge.broker.redis_broker import RedisBroker
 
 
 @activity.defn

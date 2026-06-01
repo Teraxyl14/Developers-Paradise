@@ -3,7 +3,8 @@ import uuid
 from typing import Optional
 
 from temporalio import workflow
-from temporalio.exceptions import ApplicationError
+from temporalio.common import RetryPolicy
+from temporalio.exceptions import ApplicationError, ActivityError
 
 # Import activities
 with workflow.unsafe.imports_passed_through():
@@ -54,7 +55,7 @@ class ExtractionWorkflow:
                         icebreaker_activity,
                         args=[workflow_id, config.urls[0]],
                         start_to_close_timeout=timedelta(minutes=2),
-                        retry_policy=workflow.RetryPolicy(maximum_attempts=2)
+                        retry_policy=RetryPolicy(maximum_attempts=2)
                     )
                 except Exception as e:
                     # Extract original error if wrapped by ApplicationError
@@ -81,7 +82,7 @@ class ExtractionWorkflow:
                         extract_activity,
                         args=[session_ctx, config, self.pagination_state],
                         start_to_close_timeout=timedelta(minutes=1),
-                        retry_policy=workflow.RetryPolicy(maximum_attempts=1) # Don't retry automatically on 429
+                        retry_policy=RetryPolicy(maximum_attempts=1) # Don't retry automatically on 429
                     )
                     
                     self.pagination_state = next_state
@@ -92,7 +93,7 @@ class ExtractionWorkflow:
                             queue_activity,
                             args=[payloads],
                             start_to_close_timeout=timedelta(seconds=30),
-                            retry_policy=workflow.RetryPolicy(
+                            retry_policy=RetryPolicy(
                                 initial_interval=timedelta(seconds=1),
                                 maximum_interval=timedelta(minutes=1),
                                 maximum_attempts=5
@@ -106,30 +107,34 @@ class ExtractionWorkflow:
                          
                     pages_processed += 1
                     
-                except ApplicationError as e:
-                    if "RateLimitError" in e.type:
-                        # Parse retry_after from the error message (or pass it in details)
-                        # We assume the error message ends with "Retry after X.0s"
-                        retry_after = 60.0
-                        msg_parts = e.message.split("Retry after ")
-                        if len(msg_parts) > 1:
-                            try:
-                                retry_after = float(msg_parts[1].replace("s", ""))
-                            except ValueError:
-                                pass
-                                
-                        workflow.logger.info(f"Rate limited. Sleeping for {retry_after}s.")
-                        await workflow.sleep(retry_after)
-                        continue # Retry the extraction
-                        
-                    elif "AuthError" in e.type:
-                        workflow.logger.error(f"Authentication failed: {e.message}")
-                        return # Abort this target
-                        
-                    elif "SessionExpiredError" in e.type or "SilentBlockError" in e.type:
-                        workflow.logger.warn("Session expired or silent block. Breaking page loop to restart Icebreaker.")
-                        break # Break inner loop, next cycle will run icebreaker again
-                        
+                except ActivityError as e:
+                    cause = e.cause
+                    if isinstance(cause, ApplicationError):
+                        if "RateLimitError" in cause.type:
+                            # Parse retry_after from the error message (or pass it in details)
+                            # We assume the error message ends with "Retry after X.0s"
+                            retry_after = 60.0
+                            msg_parts = cause.message.split("Retry after ")
+                            if len(msg_parts) > 1:
+                                try:
+                                    retry_after = float(msg_parts[1].replace("s", ""))
+                                except ValueError:
+                                    pass
+                                    
+                            workflow.logger.info(f"Rate limited. Sleeping for {retry_after}s.")
+                            await workflow.sleep(retry_after)
+                            continue # Retry the extraction
+                            
+                        elif "AuthError" in cause.type:
+                            workflow.logger.error(f"Authentication failed: {cause.message}")
+                            return # Abort this target
+                            
+                        elif "SessionExpiredError" in cause.type or "SilentBlockError" in cause.type:
+                            workflow.logger.warn("Session expired or silent block. Breaking page loop to restart Icebreaker.")
+                            break # Break inner loop, next cycle will run icebreaker again
+                            
+                        else:
+                            raise e
                     else:
                         raise e
             
