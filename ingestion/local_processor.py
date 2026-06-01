@@ -224,28 +224,36 @@ async def process_payload(payload_str, conn, client, breaker):
         extracted_at = data.get("extracted_at")
 
         if not raw_content:
-            return
+            return False
 
         print(f"\n[Processing] Source: {source} | URL: {target_url}")
         
         # 1. Parse via Gemini
         parsed_json = await breaker.call(parse_with_gemini_sync, raw_content, target_url, client)
+        
+        # Safe RPM rate limiting
+        rate_limit_delay = int(os.getenv("RATE_LIMIT_DELAY", "15"))
+        await asyncio.sleep(rate_limit_delay)
+
         if not parsed_json or "title" not in parsed_json:
             print("  -> Noise rejected by LLM")
-            return
+            return True # Attempt was made
 
         title_short = parsed_json.get('title', '')[:60]
         text_to_embed = f"{parsed_json.get('title', '')}. {parsed_json.get('description', '')}"
 
         # 2. Embed
         embedding_result = await asyncio.get_event_loop().run_in_executor(None, generate_embedding_sync, text_to_embed, client)
+        
+        # Safe RPM rate limiting
+        await asyncio.sleep(rate_limit_delay)
 
         # 3. Deduplicate
         existing_id, similarity = check_semantic_duplicate(conn, embedding_result)
         if existing_id:
             merge_into_existing(conn, existing_id, source)
             print(f"  -> [MERGED] (sim={similarity:.2f}): {title_short}")
-            return
+            return True
 
         # 4. Insert
         success = insert_into_db(parsed_json, target_url, conn, source, embedding_result, extracted_at)
@@ -253,9 +261,12 @@ async def process_payload(payload_str, conn, client, breaker):
             print(f"  -> [INSERTED]: {title_short}")
         else:
             print(f"  -> [FAILED DB INSERT]")
+        
+        return True
 
     except Exception as e:
         print(f"  [Error] Failed to process payload: {e}")
+        return False
 
 
 async def run_poller():
@@ -268,23 +279,31 @@ async def run_poller():
     genai_client = genai.Client(api_key=GEMINI_API_KEY)
     breaker = CircuitBreaker()
 
+    max_payloads = int(os.getenv("MAX_PAYLOADS_PER_RUN", "3"))
+    processed_count = 0
+
     print(f"[*] Started Local Queue Poller")
-    print(f"[*] Listening on Redis queue: dp:raw_payloads")
+    print(f"[*] Listening on Redis queue: dp:raw_payloads (Cap: {max_payloads} items/run)")
 
     try:
-        while True:
+        while processed_count < max_payloads:
             try:
                 # BLPOP blocks until a payload is available or timeout hits
                 result = await redis_client.blpop("dp:raw_payloads", timeout=30)
                 if result:
                     _, payload_str = result
-                    await process_payload(payload_str, conn, genai_client, breaker)
+                    success = await process_payload(payload_str, conn, genai_client, breaker)
+                    if success:
+                        processed_count += 1
+                        print(f"[*] Progress: {processed_count}/{max_payloads} payloads processed in this run.")
             except redis.ConnectionError:
                 print("Redis connection error. Retrying in 5s...")
                 await asyncio.sleep(5)
             except Exception as e:
                 print(f"Unexpected poller error: {e}")
                 await asyncio.sleep(1)
+        
+        print(f"\n[*] Reached maximum payloads limit per run ({max_payloads}). Exiting gracefully to protect API quota.")
     finally:
         conn.close()
         await redis_client.aclose()
