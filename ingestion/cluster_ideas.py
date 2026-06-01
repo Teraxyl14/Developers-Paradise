@@ -41,6 +41,8 @@ def generate_cluster_summary(titles):
             model='gemini-3.5-flash',
             contents=prompt,
         )
+        import time
+        time.sleep(12) # Safe RPM rate limit sleep
         return response.text.strip().replace('"', '')
     except Exception as e:
         print(f"Failed to generate summary: {e}")
