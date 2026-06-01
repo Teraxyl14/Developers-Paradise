@@ -18,13 +18,16 @@ export async function generateSitemaps() {
   // Ensure at least 1 sitemap is generated
   const numSitemaps = Math.max(1, Math.ceil(total / ITEMS_PER_SITEMAP))
 
-  return Array.from({ length: numSitemaps }, (_, i) => ({ id: i }))
+  return Array.from({ length: numSitemaps }, (_, i) => ({ id: i.toString() }))
 }
 
-export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
+export default async function sitemap(props: {
+  id: Promise<string>
+}): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://developers-paradise.com'
 
-  const sitemapId = id ?? 0
+  const resolvedId = await props.id
+  const sitemapId = parseInt(resolvedId, 10) || 0
   const offset = sitemapId * ITEMS_PER_SITEMAP
 
   // Fetch combinations for this specific chunk
