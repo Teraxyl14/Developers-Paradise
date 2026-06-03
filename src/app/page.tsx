@@ -371,10 +371,10 @@ export default function LandingPage() {
       </div>
 
       {/* ═══ LAYER 2: BACKGROUND RISER TEXT ═══ */}
-      <div className="fixed inset-0 z-0 flex items-center justify-center pointer-events-none overflow-hidden pb-32">
+      <div className="fixed inset-0 z-0 flex items-start justify-center pointer-events-none overflow-hidden pt-20 sm:pt-16">
         <motion.h1
           style={{ y: riserY, scale: riserScale, opacity: riserOpacity, fontFamily: "var(--font-bebas)" }}
-          className="text-[clamp(6rem,22vw,28rem)] font-normal leading-[0.85] text-text-primary whitespace-nowrap tracking-tighter select-none drop-shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] overflow-hidden max-w-full text-center flex flex-col"
+          className="text-[clamp(6rem,18vw,20rem)] font-normal leading-[0.85] text-text-primary whitespace-nowrap tracking-tighter select-none drop-shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] overflow-hidden max-w-full text-center flex flex-col"
         >
           <span>BUILD WHAT DEVS</span>
           <span className="text-gradient -mt-2 sm:-mt-6">NEED</span>
