@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { Bell } from "lucide-react"
 import { getUnreadNotificationCount, getNotifications, markNotificationsAsRead } from "@/actions/notifications"
 import Link from "next/link"
+import Image from "next/image"
 
 export function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
@@ -68,8 +69,9 @@ export function NotificationBell() {
                     <div className="flex gap-3">
                       <div className="shrink-0 pt-0.5">
                         {notif.actor?.image ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={notif.actor.image} alt="" className="w-8 h-8 rounded-full" />
+                          <div className="relative w-8 h-8 rounded-full overflow-hidden">
+                            <Image src={notif.actor.image} alt="" fill sizes="32px" className="object-cover" />
+                          </div>
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">{notif.actor?.name?.charAt(0) || 'U'}</div>
                         )}

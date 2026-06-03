@@ -7,12 +7,15 @@ import { GoogleGenAI } from "@google/genai"
 const ai = process.env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }) : null;
 const RRF_K = 60;
 
+import { cacheLife, cacheTag } from 'next/cache'
+
 interface VectorSearchHit {
   id: string;
   similarity: number;
 }
 
-export async function getIdeas(
+// Global cached function that does not rely on user cookies
+async function getCachedIdeas(
   sortBy: 'latest' | 'trending' | 'contrarian' = 'latest',
   searchQuery: string = '',
   page: number = 1,
@@ -20,7 +23,9 @@ export async function getIdeas(
   difficulty?: string,
   domain?: string
 ) {
-  const session = await auth();
+  'use cache';
+  cacheLife('hours');
+  cacheTag('ideas');
   
   // 1. Standard Keyword Search Clause
   const keywordWhereClause = searchQuery ? {
@@ -142,11 +147,8 @@ export async function getIdeas(
                 },
                 include: {
                   tags: { include: { tag: true } },
-                  savedBy: session?.user?.id ? { where: { userId: session.user.id } } : undefined,
                   repositories: true,
                   _count: { select: { upvotes: true, comments: true } },
-                  upvotes: session?.user?.id ? { where: { userId: session.user.id } } : undefined,
-                  waitlist: session?.user?.id ? { where: { userId: session.user.id } } : undefined,
                   author: { select: { name: true, id: true } },
                   comments: { include: { user: { select: { name: true, id: true, image: true } } }, orderBy: { createdAt: 'desc' } }
                 }
@@ -174,11 +176,8 @@ export async function getIdeas(
     take: limit,
     include: {
       tags: { include: { tag: true } },
-      savedBy: session?.user?.id ? { where: { userId: session.user.id } } : undefined,
       repositories: true,
       _count: { select: { upvotes: true, comments: true } },
-      upvotes: session?.user?.id ? { where: { userId: session.user.id } } : undefined,
-      waitlist: session?.user?.id ? { where: { userId: session.user.id } } : undefined,
       author: { select: { name: true, id: true } },
       comments: { include: { user: { select: { name: true, id: true, image: true } } }, orderBy: { createdAt: 'desc' } }
     },
@@ -186,6 +185,36 @@ export async function getIdeas(
   });
 
   return { ideas, totalPages };
+}
+
+export async function getIdeas(
+  sortBy: 'latest' | 'trending' | 'contrarian' = 'latest',
+  searchQuery: string = '',
+  page: number = 1,
+  limit: number = 10,
+  difficulty?: string,
+  domain?: string
+) {
+  const session = await auth();
+  const { ideas, totalPages } = await getCachedIdeas(sortBy, searchQuery, page, limit, difficulty, domain);
+
+  if (!session?.user?.id || ideas.length === 0) return { ideas, totalPages };
+
+  const ideaIds = ideas.map(i => i.id);
+  const [userUpvotes, userWaitlists, userSaved] = await Promise.all([
+    prisma.upvote.findMany({ where: { userId: session.user.id, ideaId: { in: ideaIds } } }),
+    prisma.waitlist.findMany({ where: { userId: session.user.id, ideaId: { in: ideaIds } } }),
+    prisma.savedIdea.findMany({ where: { userId: session.user.id, ideaId: { in: ideaIds } } })
+  ]);
+
+  const mergedIdeas = ideas.map(idea => ({
+    ...idea,
+    upvotes: userUpvotes.filter(u => u.ideaId === idea.id),
+    waitlist: userWaitlists.filter(w => w.ideaId === idea.id),
+    savedBy: userSaved.filter(s => s.ideaId === idea.id),
+  }));
+
+  return { ideas: mergedIdeas, totalPages };
 }
 
 export async function getLandingStats() {

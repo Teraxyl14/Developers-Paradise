@@ -1,7 +1,8 @@
 import { auth } from "@/auth"
 import prisma from "@/lib/prisma"
-import { Shield, Users, Database, Star, GitBranch, MessageSquare, Activity } from "lucide-react"
+import { Shield, Users, Database, Star, GitBranch, MessageSquare } from "lucide-react"
 import { AdminControls } from "./AdminControls"
+import Image from "next/image"
 
 const ADMIN_EMAILS = ['maruttewari12@gmail.com', 'myraanand06@gmail.com'];
 
@@ -97,7 +98,7 @@ export default async function AdminPage() {
           {recentUsers.map((u) => (
             <div key={u.id} className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-100 dark:border-white/5">
               {u.image ? (
-                <img src={u.image} alt="" className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700" />
+                <Image src={u.image} alt="" width={32} height={32} className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 object-cover" />
               ) : (
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white">
                   {u.name?.charAt(0) || '?'}

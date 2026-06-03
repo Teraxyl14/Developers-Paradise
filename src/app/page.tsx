@@ -1,4 +1,5 @@
 "use client"
+import Image from "next/image"
 import { Suspense, useState, useEffect, useRef } from "react"
 import { Canvas } from "@react-three/fiber"
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
@@ -258,14 +259,13 @@ export default function LandingPage() {
   const riserOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0])
 
   return (
-    <div ref={containerRef} className="text-text-primary min-h-screen relative">
-
+    <div ref={containerRef} className="text-text-primary min-h-screen relative overflow-hidden">
       {/* Sticky floating glass header */}
       <div className="sticky top-0 w-full z-50 bg-bg-primary/50 backdrop-blur-lg border-b border-border-default/45 shadow-sm transition-colors duration-300">
         <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 max-w-6xl mx-auto w-full">
           <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group shrink-0 cursor-pointer">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg overflow-hidden border border-border-default shadow-lg shadow-accent/10 group-hover:scale-105 transition-transform">
-              <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
+            <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-lg overflow-hidden border border-border-default shadow-lg shadow-accent/10 group-hover:scale-105 transition-transform">
+              <Image src="/logo.png" alt="Logo" fill sizes="(max-width: 640px) 32px, 36px" className="object-cover" priority />
             </div>
             <span className="font-bold font-display text-text-primary text-lg hidden sm:flex items-center">
               {"Developer's Paradise".split("").map((char, index) => (
@@ -374,7 +374,7 @@ export default function LandingPage() {
       <div className="fixed inset-0 z-0 flex items-start justify-center pointer-events-none overflow-hidden pt-28 sm:pt-20">
         <motion.h1
           style={{ y: riserY, scale: riserScale, opacity: riserOpacity, fontFamily: "var(--font-bebas)" }}
-          className="text-[9vw] sm:text-[12vw] md:text-[13vw] lg:text-[14vw] font-normal leading-none text-text-primary whitespace-nowrap tracking-tight select-none drop-shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+          className="text-[clamp(4rem,14vw,12rem)] font-normal leading-none text-text-primary whitespace-nowrap tracking-tight select-none drop-shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] overflow-hidden max-w-full text-center"
         >
           BUILD WHAT DEVS <span className="text-gradient">NEED</span>
         </motion.h1>
@@ -717,7 +717,7 @@ export default function LandingPage() {
                       </div>
 
                       {/* Problem title */}
-                      <h4 className="text-xl font-bold text-text-primary mb-4 leading-snug font-display group-hover:text-accent transition-colors text-left">
+                      <h4 className="text-xl font-bold text-text-primary mb-4 leading-snug font-display group-hover:text-accent transition-colors text-left break-words min-w-0">
                         {idea.title}
                       </h4>
 

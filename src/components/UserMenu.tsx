@@ -4,6 +4,7 @@ import { signOut } from "next-auth/react"
 import Link from "next/link"
 import { LogOut, User } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import Image from "next/image"
 
 export function UserMenu({ session }: { session: { user?: { name?: string | null; email?: string | null; image?: string | null } } | null }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -26,8 +27,9 @@ export function UserMenu({ session }: { session: { user?: { name?: string | null
         className="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-bg-surface transition-all"
       >
         {session.user.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={session.user.image} alt="" className="w-7 h-7 rounded-full ring-2 ring-bg-primary shadow-sm" />
+          <div className="relative w-7 h-7 rounded-full overflow-hidden ring-2 ring-bg-primary shadow-sm">
+            <Image src={session.user.image} alt="" fill sizes="28px" className="object-cover" />
+          </div>
         ) : (
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold shadow-sm ring-2 ring-bg-primary">
             {session.user.name?.charAt(0) || 'D'}

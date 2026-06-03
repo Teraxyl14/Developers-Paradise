@@ -1,7 +1,7 @@
 "use server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 
 export async function upvoteIdea(ideaId: string) {
   const session = await auth();
@@ -48,6 +48,7 @@ export async function upvoteIdea(ideaId: string) {
 
   revalidatePath('/dashboard');
   revalidatePath('/profile');
+  revalidateTag('ideas', 'max');
 }
 
 export async function toggleWaitlist(ideaId: string) {
@@ -94,6 +95,7 @@ export async function toggleWaitlist(ideaId: string) {
   }
 
   revalidatePath('/dashboard');
+  revalidateTag('ideas', 'max');
 }
 
 export async function addComment(ideaId: string, content: string) {
@@ -122,4 +124,5 @@ export async function addComment(ideaId: string, content: string) {
   });
 
   revalidatePath('/dashboard');
+  revalidateTag('ideas', 'max');
 }

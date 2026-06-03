@@ -32,7 +32,7 @@ export function IdeaCard({ idea, isExpanded, onToggle }: { idea: any, isExpanded
 
   const [optimisticComments, addOptimisticComment] = useOptimistic(
     idea.comments || [],
-    (state, newComment: any) => [newComment, ...state]
+    (state, newComment: { id: string; content: string; createdAt: string; user: { name: string; image?: string | null } }) => [newComment, ...state]
   );
 
   const handleUpvote = async (e: React.MouseEvent) => {
@@ -119,8 +119,7 @@ export function IdeaCard({ idea, isExpanded, onToggle }: { idea: any, isExpanded
             className={`flex flex-col items-center justify-center w-11 h-14 rounded-xl border transition-all duration-300 ${optimisticUpvote.isUpvoted
                 ? "bg-accent/20 border-accent/40 text-accent shadow-[inset_0_0_12px_rgba(99,102,241,0.15)]"
                 : "bg-white/5 dark:bg-zinc-900/40 border-border-default/80 dark:border-white/5 hover:bg-accent/10 hover:border-accent/20 text-text-muted hover:text-accent"
-              } ${isPending ? "opacity-70 grayscale" : ""}`}
-            disabled={isPending}
+              }`}
           >
             <ChevronUp className={`w-5 h-5 transition-transform duration-300 ${optimisticUpvote.isUpvoted ? "translate-y-[-1px] scale-110" : "group-hover/upvote:-translate-y-0.5"}`} />
             <span className={`text-xs font-mono font-bold mt-0.5 ${optimisticUpvote.isUpvoted ? "text-accent" : "text-text-secondary"}`}>{optimisticUpvote.count}</span>
@@ -229,8 +228,7 @@ export function IdeaCard({ idea, isExpanded, onToggle }: { idea: any, isExpanded
                   optimisticWaitlist 
                     ? "bg-green-500/20 border-green-500/40 text-green-400" 
                     : "bg-white/5 border-white/10 text-text-primary hover:bg-white/10"
-                } ${isPending ? "opacity-70 grayscale" : ""}`}
-                disabled={isPending}
+                }`}
               >
                 {optimisticWaitlist ? "You are on the Waitlist" : "Join Developer Waitlist"} <HandMetal className="w-4 h-4" />
               </button>

@@ -5,6 +5,7 @@ import { updateProfile } from "@/actions/profile"
 import { Code, Link2, Save, Globe, Calendar, ChevronUp, Bookmark, MessageSquare, GitBranch, Lightbulb } from "lucide-react"
 import { SubmitButton } from "@/components/SubmitButton"
 import { ProfileTabs } from "./ProfileTabs"
+import Image from "next/image"
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -84,7 +85,9 @@ export default async function ProfilePage() {
           {/* Avatar Area */}
           <div className="relative shrink-0 group">
             {user.image ? (
-              <img src={user.image} alt="Profile" className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-2 border-accent/20 shadow-xl shrink-0 bg-zinc-900 object-cover" />
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-accent/20 shadow-xl shrink-0 bg-zinc-900">
+                <Image src={user.image} alt="Profile" fill sizes="(max-width: 640px) 96px, 112px" className="object-cover" priority />
+              </div>
             ) : (
               <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-accent flex items-center justify-center text-4xl font-black text-white border-2 border-accent/20 shadow-xl shrink-0">
                 {user.name?.charAt(0) || 'D'}

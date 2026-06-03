@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { signIn, useSession } from 'next-auth/react'
 import { X, Mail, Lock, User, Loader2 } from 'lucide-react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { registerUser } from '@/actions/auth'
 
@@ -165,8 +166,8 @@ export function AuthModal() {
             </button>
 
             <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto bg-black border border-white/10 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-accent/20">
-                <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain" />
+              <div className="relative w-16 h-16 mx-auto bg-black border border-white/10 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-accent/20 overflow-hidden">
+                <Image src="/logo.png" alt="Logo" fill sizes="64px" className="object-contain p-3" />
               </div>
               <h2 className="text-2xl font-bold font-display text-white mb-2">
                 {mode === 'signin' ? 'Welcome Back' : 'Create an Account'}
@@ -264,7 +265,9 @@ export function AuthModal() {
                 onClick={() => signIn('google')}
                 className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-3 px-4 rounded-xl transition-all"
               >
-                <img src="https://authjs.dev/img/providers/google.svg" alt="Google" className="w-5 h-5" />
+                <div className="relative w-5 h-5">
+                  <Image src="https://authjs.dev/img/providers/google.svg" alt="Google" fill sizes="20px" className="object-contain" />
+                </div>
                 Google
               </button>
               
@@ -272,7 +275,9 @@ export function AuthModal() {
                 onClick={() => signIn('github')}
                 className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-3 px-4 rounded-xl transition-all hover:text-white"
               >
-                <img src="https://authjs.dev/img/providers/github.svg" alt="GitHub" className="w-5 h-5 invert" />
+                <div className="relative w-5 h-5">
+                  <Image src="https://authjs.dev/img/providers/github.svg" alt="GitHub" fill sizes="20px" className="object-contain invert" />
+                </div>
                 GitHub
               </button>
             </div>

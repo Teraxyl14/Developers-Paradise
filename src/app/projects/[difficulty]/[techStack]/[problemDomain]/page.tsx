@@ -3,8 +3,8 @@ import prisma from '@/lib/prisma'
 import { IdeaCard } from '@/components/IdeaCard'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { cacheLife, cacheTag } from 'next/cache'
 
-export const revalidate = 86400 // Revalidate every 24 hours
 
 interface PageProps {
   params: Promise<{
@@ -67,46 +67,27 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-async function getRelatedBlueprints(referenceIdeaId: string, domain: string) {
-  try {
-    const qdrantUrl = process.env.QDRANT_URL || 'http://localhost:6333'
-    const response = await fetch(`${qdrantUrl}/collections/ideas/points/recommend`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        positive: [referenceIdeaId],
-        filter: {
-          must: [
-            { key: "domain", match: { value: domain } }
-          ]
-        },
-        limit: 3,
-        with_payload: true
-      }),
-      next: { revalidate: 86400 }
-    })
-    
-    if (!response.ok) return []
-    const data = await response.json()
-    return (data.result || []) as any[]
-  } catch (error) {
-    console.error("Qdrant fetch error:", error)
-    return []
+interface Blueprint {
+  id: string
+  payload?: {
+    difficulty?: string
+    techStack?: string
+    domain?: string
+    title?: string
   }
 }
 
-export default async function ProjectIdeasPage({ params }: PageProps) {
-  const { difficulty, techStack, problemDomain } = await params
+async function getProjectPageData(difficulty: string, techStack: string, problemDomain: string) {
+  'use cache'
+  cacheLife('days')
+  cacheTag('ideas')
 
-  // De-slugify the parameters for display and querying
-  // Since original casing is lost in the slug, we'll use a case-insensitive raw query
   const searchDifficulty = decodeURIComponent(difficulty).replace(/-/g, ' ')
   const searchTechStack = decodeURIComponent(techStack).replace(/-/g, ' ')
   const searchDomain = decodeURIComponent(problemDomain).replace(/-/g, ' ')
 
-  // Fetch matching ideas
-  const ideas = await prisma.$queryRaw<any[]>`
-    SELECT * FROM "Idea"
+  const ideas = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT id FROM "Idea"
     WHERE 
       LOWER(difficulty) = LOWER(${searchDifficulty}) AND
       LOWER(domain) = LOWER(${searchDomain}) AND
@@ -119,14 +100,9 @@ export default async function ProjectIdeasPage({ params }: PageProps) {
   `
 
   if (!ideas || ideas.length === 0) {
-    notFound()
+    return null
   }
 
-  // Raw query doesn't automatically map relations, so we need to fetch user data manually or use Prisma query if possible.
-  // Wait, Prisma raw query for complete object requires manual mapping. Let's use Prisma query since we know exactly what we need.
-  // But wait! Prisma Postgres vector extension might complain about Prisma query if we include it, but let's try a regular prisma query and filter in memory, or use Prisma `hasSome` for arrays which is NOT case-insensitive.
-  
-  // Actually, we can fetch the IDs using raw query, then fetch the full objects using standard Prisma query!
   const ideaIds = ideas.map(idea => idea.id)
   
   const fullIdeas = await prisma.idea.findMany({
@@ -155,14 +131,58 @@ export default async function ProjectIdeasPage({ params }: PageProps) {
     }
   })
 
-  // Calculate aggregates for JSON-LD AggregateRating
+  let relatedBlueprints: Blueprint[] = []
+  if (fullIdeas.length > 0) {
+    try {
+      const qdrantUrl = process.env.QDRANT_URL || 'http://localhost:6333'
+      const response = await fetch(`${qdrantUrl}/collections/ideas/points/recommend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          positive: [fullIdeas[0].id],
+          filter: {
+            must: [
+              { key: "domain", match: { value: searchDomain } }
+            ]
+          },
+          limit: 3,
+          with_payload: true
+        })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        relatedBlueprints = (data.result || []) as Blueprint[]
+      }
+    } catch (error) {
+      console.error("Qdrant fetch error:", error)
+    }
+  }
+
+  return {
+    fullIdeas,
+    relatedBlueprints,
+    searchDifficulty,
+    searchTechStack,
+    searchDomain
+  }
+}
+
+export default async function ProjectIdeasPage({ params }: PageProps) {
+  const { difficulty, techStack, problemDomain } = await params
+
+  const data = await getProjectPageData(difficulty, techStack, problemDomain)
+
+  if (!data) {
+    notFound()
+  }
+
+  const { fullIdeas, relatedBlueprints, searchDifficulty, searchTechStack, searchDomain } = data
+
   const totalUpvotes = fullIdeas.reduce((sum, idea) => sum + idea.upvotes.length, 0)
   const totalWaitlists = fullIdeas.reduce((sum, idea) => sum + idea.waitlist.length, 0)
   const totalInteractions = totalUpvotes + totalWaitlists || 1
   const averageRating = totalInteractions > 0 ? 4.8 : 0
-
-  // Fetch Qdrant related blueprints using the first idea as a reference centroid
-  const relatedBlueprints = fullIdeas.length > 0 ? await getRelatedBlueprints(fullIdeas[0].id, searchDomain) : []
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://developers-paradise.com'
   
@@ -217,8 +237,8 @@ export default async function ProjectIdeasPage({ params }: PageProps) {
           <span className="text-accent">{searchDifficulty.toUpperCase()}</span> {searchTechStack.toUpperCase()} IDEAS IN {searchDomain.toUpperCase()}
         </h1>
         <p className="text-text-secondary text-lg max-w-2xl">
-          We've analyzed developer communities and found validated market gaps that match your stack. 
-          These aren't generic templates—they are real problems waiting for a solution.
+          We&apos;ve analyzed developer communities and found validated market gaps that match your stack. 
+          These aren&apos;t generic templates—they are real problems waiting for a solution.
         </p>
       </div>
 
@@ -233,7 +253,7 @@ export default async function ProjectIdeasPage({ params }: PageProps) {
         <div className="mt-20 border-t border-border-default pt-12">
           <h2 className="text-2xl font-bebas tracking-wide mb-6">Related Structural Blueprints</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {relatedBlueprints.map((blueprint: any) => {
+            {relatedBlueprints.map((blueprint: Blueprint) => {
               const bDiff = blueprint.payload?.difficulty?.toLowerCase().replace(/\s+/g, '-') || difficulty
               const bStack = blueprint.payload?.techStack?.toLowerCase().replace(/\s+/g, '-') || techStack
               const bDomain = blueprint.payload?.domain?.toLowerCase().replace(/\s+/g, '-') || problemDomain

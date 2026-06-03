@@ -4,6 +4,8 @@ import { SearchBar } from "@/components/SearchBar"
 import { Compass } from "lucide-react"
 import prisma from "@/lib/prisma"
 
+export const unstable_instant = false
+
 export default async function DashboardPage(props: { 
   searchParams?: Promise<{ sort?: string, q?: string, page?: string, difficulty?: string, domain?: string, ideaId?: string }> 
 }) {

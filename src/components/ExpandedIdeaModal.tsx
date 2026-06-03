@@ -240,7 +240,7 @@ export function ExpandedIdeaModal({ idea, onClose }: { idea: any, onClose: () =>
                     No comments yet.
                   </div>
                 ) : (
-                  idea.comments?.map((c: any) => (
+                  idea.comments?.map((c: { id: string; content: string; createdAt: Date | string | number; user: { name: string | null } }) => (
                     <div key={c.id} className="bg-white/[0.03] dark:bg-zinc-900/30 p-4 rounded-xl border border-white/5 hover:border-accent/15 transition-all text-left">
                       <div className="flex items-center gap-2 mb-2.5">
                         <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-[10px] font-black text-accent">
