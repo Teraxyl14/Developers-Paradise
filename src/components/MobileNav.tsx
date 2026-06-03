@@ -80,21 +80,24 @@ export function MobileNav({ isAdmin, isLoggedIn }: { isAdmin: boolean, isLoggedI
               exit="closed"
               className="absolute top-full left-4 right-4 z-50 liquid-glass border border-border-default rounded-2xl shadow-2xl p-3 space-y-1 mt-2"
             >
-              {links.map(({ href, label, icon: Icon }) => (
-                <motion.div key={href} variants={itemVariants}>
-                  <Link
-                    href={href}
-                    className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all ${
-                      pathname === href 
-                        ? 'bg-accent-soft text-accent-text' 
-                        : 'text-text-secondary hover:bg-bg-surface-hover'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    {label}
-                  </Link>
-                </motion.div>
-              ))}
+              {links.map(({ href, label, icon: Icon }) => {
+                const isActive = pathname === href || pathname.startsWith(href + '/');
+                return (
+                  <motion.div key={href} variants={itemVariants}>
+                    <Link
+                      href={href}
+                      className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all ${
+                        isActive 
+                          ? 'bg-accent-soft text-accent-text shadow-sm shadow-accent/5 border border-accent/10' 
+                          : 'text-text-muted hover:text-text-primary hover:bg-bg-surface'
+                      }`}
+                    >
+                      <Icon className={`w-5 h-5 ${isActive ? 'text-accent' : ''}`} />
+                      {label}
+                    </Link>
+                  </motion.div>
+                );
+              })}
               {!isLoggedIn && (
                 <motion.div variants={itemVariants}>
                   <button

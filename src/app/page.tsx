@@ -263,7 +263,7 @@ export default function LandingPage() {
       {/* Sticky floating glass header */}
       <div className="sticky top-0 w-full z-50 bg-bg-primary/50 backdrop-blur-lg border-b border-border-default/45 shadow-sm transition-colors duration-300">
         <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 max-w-6xl mx-auto w-full">
-          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group shrink-0 cursor-pointer">
+          <a href="/" className="flex items-center gap-2 sm:gap-2.5 group shrink-0 cursor-pointer">
             <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-lg overflow-hidden border border-border-default shadow-lg shadow-accent/10 group-hover:scale-105 transition-transform">
               <Image src="/logo.png" alt="Logo" fill sizes="(max-width: 640px) 32px, 36px" className="object-cover" priority />
             </div>
@@ -280,7 +280,7 @@ export default function LandingPage() {
                 </motion.span>
               ))}
             </span>
-          </Link>
+          </a>
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -371,12 +371,13 @@ export default function LandingPage() {
       </div>
 
       {/* ═══ LAYER 2: BACKGROUND RISER TEXT ═══ */}
-      <div className="fixed inset-0 z-0 flex items-start justify-center pointer-events-none overflow-hidden pt-28 sm:pt-20">
+      <div className="fixed inset-0 z-0 flex items-center justify-center pointer-events-none overflow-hidden pb-32">
         <motion.h1
           style={{ y: riserY, scale: riserScale, opacity: riserOpacity, fontFamily: "var(--font-bebas)" }}
-          className="text-[clamp(4rem,14vw,12rem)] font-normal leading-none text-text-primary whitespace-nowrap tracking-tight select-none drop-shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] overflow-hidden max-w-full text-center"
+          className="text-[clamp(6rem,22vw,28rem)] font-normal leading-[0.85] text-text-primary whitespace-nowrap tracking-tighter select-none drop-shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] overflow-hidden max-w-full text-center flex flex-col"
         >
-          BUILD WHAT DEVS <span className="text-gradient">NEED</span>
+          <span>BUILD WHAT DEVS</span>
+          <span className="text-gradient -mt-2 sm:-mt-6">NEED</span>
         </motion.h1>
       </div>
 
