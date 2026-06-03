@@ -260,7 +260,7 @@ const nodeFrag = /* glsl */ `
 
 function resolveScrollTargets(s: number): { z: number; y: number; tilt: number } {
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768
-  const o = isMobile ? 0.6 : 0
+  const o = isMobile ? 0.4 : 0
 
   if (s < 0.25) {
     const t = s / 0.25
