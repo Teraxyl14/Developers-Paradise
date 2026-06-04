@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-
-const ADMIN_EMAILS = ['maruttewari12@gmail.com', 'myraanand06@gmail.com'];
+import { ADMIN_EMAILS } from "@/lib/constants";
 
 export async function GET() {
   // Only allow admins to seed test data

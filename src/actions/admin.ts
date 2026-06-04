@@ -4,10 +4,9 @@ import prisma from "@/lib/prisma"
 import { auth } from "@/auth"
 import { Resend } from "resend"
 import { revalidatePath } from "next/cache"
+import { ADMIN_EMAILS } from "@/lib/constants"
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy');
-
-const ADMIN_EMAILS = ['maruttewari12@gmail.com', 'myraanand06@gmail.com'];
 
 async function requireAdmin() {
   const session = await auth();

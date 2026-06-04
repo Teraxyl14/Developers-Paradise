@@ -16,7 +16,7 @@ export default auth((req) => {
   }
 
   const isLoggedIn = !!req.auth;
-  const isPublicRoute = pathname === '/' || pathname === '/dashboard' || pathname.startsWith('/api/auth') || pathname.startsWith('/idea');
+  const isPublicRoute = pathname === '/' || pathname === '/dashboard' || pathname.startsWith('/api/auth') || pathname.startsWith('/idea') || pathname.startsWith('/legal') || pathname.startsWith('/.well-known');
 
   if (!isPublicRoute && !isLoggedIn) {
     const signInUrl = new URL('/dashboard', req.nextUrl);

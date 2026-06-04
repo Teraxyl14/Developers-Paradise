@@ -1,0 +1,51 @@
+# ─── Docker Build Context Exclusions ───
+# Prevents secrets and large/unnecessary files from being copied
+# into the Docker builder layer via `COPY . .`
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Version control
+.git
+.gitignore
+
+# Dependencies (rebuilt inside container)
+node_modules
+
+# Next.js build output (rebuilt inside container)
+.next
+out
+
+# IDE & editor files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Documentation & non-build assets
+*.md
+LICENSE
+Dockerfile
+.dockerignore
+.vercelignore
+
+# Python ingestion pipeline (not part of the Next.js app)
+ingestion/
+__pycache__/
+*.pyc
+
+# Misc large files
+*.zip
+*.png
+*.jpg
+*.jpeg
+!public/**
+!favicon_io/**
+
+# Vercel
+.vercel
+
+# Test files
+test_query.ts

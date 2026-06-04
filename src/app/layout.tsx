@@ -10,7 +10,9 @@ import { MobileNav } from "@/components/MobileNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MainAppWrapper } from "@/components/MainAppWrapper";
 import { LayoutChrome } from "@/components/LayoutChrome";
+import { CookieBanner } from "@/components/CookieBanner";
 import { auth } from "@/auth";
+import { ADMIN_EMAILS } from "@/lib/constants";
 import Image from "next/image";
 import { Suspense } from "react";
 import { CurrentYear } from "@/components/CurrentYear";
@@ -68,7 +70,6 @@ function HeaderFallback() {
 
 async function HeaderComponent() {
   const session = await auth();
-  const ADMIN_EMAILS = ['maruttewari12@gmail.com', 'myraanand06@gmail.com'];
   const isAdmin = session?.user?.email ? ADMIN_EMAILS.includes(session.user.email) : false;
 
   return (
@@ -127,7 +128,7 @@ export default async function RootLayout({
               <LayoutChrome>
                 <footer className="border-t border-border-default py-10 mt-auto bg-bg-primary transition-colors">
                   <div className="max-w-6xl mx-auto px-4 md:px-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
                       <div>
                         <div className="flex items-center gap-2 mb-3">
                           <div className="relative w-6 h-6 rounded-md overflow-hidden border border-border-default">
@@ -149,6 +150,14 @@ export default async function RootLayout({
                         </div>
                       </div>
                       <div>
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-3">Legal</h4>
+                        <div className="flex flex-col gap-2">
+                          <Link href="/legal/terms" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Terms of Service</Link>
+                          <Link href="/legal/privacy" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Privacy Policy</Link>
+                          <Link href="/legal/dmca" className="text-sm text-text-secondary hover:text-text-primary transition-colors">DMCA Policy</Link>
+                        </div>
+                      </div>
+                      <div>
                         <h4 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-3">Connect</h4>
                         <div className="flex flex-col gap-2">
                           <Link href="https://maruttewari.onrender.com/" target="_blank" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Portfolio</Link>
@@ -164,6 +173,7 @@ export default async function RootLayout({
                 </footer>
               </LayoutChrome>
             </Suspense>
+            <CookieBanner />
           </MainAppWrapper>
         </Providers>
       </body>
